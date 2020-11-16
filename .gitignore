@@ -1,0 +1,9 @@
+**/build
+**/dist
+**/lib
+**/nbproject
+**/out
+**/test
+*.xml
+*.mf
+*.iml
