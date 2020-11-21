@@ -178,7 +178,52 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private short getVoxelTrilinear(double[] coord) {
         // TODO 1: Implement Tri-Linear interpolation and use it in your code
         // instead of getVoxel().
-        return 0;
+        
+        // System.out.println("Inside getVoxelTrilinear");
+        
+        // Get coordinates
+        double dx = coord[0], dy = coord[1], dz = coord[2];
+
+        // Verify they are inside the volume
+        if (dx < 0 || dx >= volume.getDimX()-1 || dy < 0 || dy >= volume.getDimY()-1
+                || dz < 0 || dz >= volume.getDimZ()-1) {
+
+            // If not, just return 0
+            return 0;
+        }
+        
+        int x0 = (int) Math.floor(coord[0]);
+        int y0 = (int) Math.floor(coord[1]);
+        int z0 = (int) Math.floor(coord[2]);
+        int x1 = x0 + 1;
+        int y1 = y0 + 1;
+        int z1 = z0 + 1;
+        
+        double alpha = coord[0] - x0;
+        double beta = coord[1] - y0;
+        double gamma = coord[2] - z0;
+        
+        // wikipedia (https://en.wikipedia.org/wiki/Trilinear_interpolation)
+        // double c00 = volume.getVoxel(x0,y0,z0)*(1-alpha) + volume.getVoxel(x1,y0,z0)*alpha;
+        // double c01 = volume.getVoxel(x0,y0,z1)*(1-alpha) + volume.getVoxel(x1,y0,z1)*alpha;
+        // double c10 = volume.getVoxel(x0,y1,z0)*(1-alpha) + volume.getVoxel(x1,y1,z0)*alpha;
+        // double c11 = volume.getVoxel(x0,y1,z1)*(1-alpha) + volume.getVoxel(x1,y1,z1)*alpha;
+        // double c0 = c00*(1-beta) + c01*beta;
+        // double c1 = c01*(1-beta) + c11*beta;
+        // double c = c0*(1-gamma) + c1*gamma;
+        // return (short) c;
+        
+        // tri-linear interpolation (lecture note 2-spatial.pdf page 7)
+        return (short)( (1-alpha)*(1-beta)*(1-gamma)*volume.getVoxel(x0,y0,z0) +
+                        alpha*(1-beta)*(1-gamma)*volume.getVoxel(x1,y0,z0) +
+                        (1-alpha)*beta*(1-gamma)*volume.getVoxel(x0,y1,z0) + 
+                        alpha*beta*(1-gamma)*volume.getVoxel(x1,y1,z0) + 
+                        (1-alpha)*(1-beta)*gamma*volume.getVoxel(x0,y0,z1) + 
+                        alpha*(1-beta)*gamma*volume.getVoxel(x1,y0,z1) +
+                        (1-alpha)*beta*gamma*volume.getVoxel(x0,y1,z1) +
+                        alpha*beta*gamma*volume.getVoxel(x1,y1,z1) );
+        
+        // return 0;
     }
 
     /**
@@ -217,7 +262,55 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
      */
     private VoxelGradient getGradientTrilinear(double[] coord) {
         // TODO 6: Implement Tri-linear interpolation for gradients
-        return ZERO_GRADIENT;
+        double dx = coord[0], dy = coord[1], dz = coord[2];
+
+        // Verify they are inside the volume gradient
+        if (dx < 0 || dx > (gradients.getDimX() - 2) || dy < 0 || dy > (gradients.getDimY() - 2)
+                || dz < 0 || dz > (gradients.getDimZ() - 2)) {
+
+            // If not, just return a zero gradient
+            return ZERO_GRADIENT;
+        }
+        int x0 = (int) Math.floor(dx);
+        int y0 = (int) Math.floor(dy);
+        int z0 = (int) Math.floor(dz);
+        int x1 = (int) Math.ceil(dx);
+        int y1 = (int) Math.ceil(dy);
+        int z1 = (int) Math.ceil(dz);
+        float alpha = (float)(coord[0] - x0);
+        float beta = (float)(coord[1] - y0);
+        float gamma = (float)(coord[2] - z0);
+        // Finally, get the gradient from GradientVolume for the corresponding coordinates
+        
+        float diff_x = ((1-alpha)*(1-beta)*(1-gamma)*gradients.getGradient(x0,y0,z0).x +
+                        alpha*(1-beta)*(1-gamma)*gradients.getGradient(x1,y0,z0).x +
+                        (1-alpha)*beta*(1-gamma)*gradients.getGradient(x0,y1,z0).x + 
+                        alpha*beta*(1-gamma)*gradients.getGradient(x1,y1,z0).x + 
+                        (1-alpha)*(1-beta)*gamma*gradients.getGradient(x0,y0,z1).x + 
+                        alpha*(1-beta)*gamma*gradients.getGradient(x1,y0,z1).x +
+                        (1-alpha)*beta*gamma*gradients.getGradient(x0,y1,z1).x +
+                        alpha*beta*gamma*gradients.getGradient(x1,y1,z1).x);
+        
+        float diff_y = ((1-alpha)*(1-beta)*(1-gamma)*gradients.getGradient(x0,y0,z0).y +
+                      alpha*(1-beta)*(1-gamma)*gradients.getGradient(x1,y0,z0).y +
+                      (1-alpha)*beta*(1-gamma)*gradients.getGradient(x0,y1,z0).y + 
+                      alpha*beta*(1-gamma)*gradients.getGradient(x1,y1,z0).y + 
+                      (1-alpha)*(1-beta)*gamma*gradients.getGradient(x0,y0,z1).y + 
+                      alpha*(1-beta)*gamma*gradients.getGradient(x1,y0,z1).y +
+                      (1-alpha)*beta*gamma*gradients.getGradient(x0,y1,z1).y +
+                      alpha*beta*gamma*gradients.getGradient(x1,y1,z1).y);
+
+        float diff_z = ((1-alpha)*(1-beta)*(1-gamma)*gradients.getGradient(x0,y0,z0).z +
+                    alpha*(1-beta)*(1-gamma)*gradients.getGradient(x1,y0,z0).z +
+                    (1-alpha)*beta*(1-gamma)*gradients.getGradient(x0,y1,z0).z + 
+                    alpha*beta*(1-gamma)*gradients.getGradient(x1,y1,z0).z + 
+                    (1-alpha)*(1-beta)*gamma*gradients.getGradient(x0,y0,z1).z + 
+                    alpha*(1-beta)*gamma*gradients.getGradient(x1,y0,z1).z +
+                    (1-alpha)*beta*gamma*gradients.getGradient(x0,y1,z1).z +
+                    alpha*beta*gamma*gradients.getGradient(x1,y1,z1).z);
+
+       VoxelGradient grad = new VoxelGradient(diff_x,diff_y,diff_z);       
+       return grad;
     }
 
     /**
@@ -270,9 +363,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 // computes the pixelCoord which contains the 3D coordinates of the pixels (i,j)
                 computePixelCoordinatesFloat(pixelCoord, volumeCenter, uVec, vVec, i, j);
 
-                int val = getVoxel(pixelCoord);
+                // int val = getVoxel(pixelCoord);
                 //NOTE: you have to implement this function to get the tri-linear interpolation
-                //int val = getVoxelTrilinear(pixelCoord);
+                int val = getVoxelTrilinear(pixelCoord);
 
                 // Map the intensity to a grey value by linear scaling
                 pixelColor.r = val / max;
@@ -304,6 +397,10 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
      * @return Color assigned to a ray/pixel.
      */
     private int traceRayMIP(double[] entryPoint, double[] exitPoint, double[] rayVector, double sampleStep) {
+        
+        // System.out.println("entryPoint: " + entryPoint[0] + " " + entryPoint[1] + " " + entryPoint[2]);
+        // System.out.println("exitPoint: " + exitPoint[0] + " " + exitPoint[1] + " " + exitPoint[2]);
+        
         //compute the increment and the number of samples
         double[] increments = new double[3];
         VectorMath.setVector(increments, rayVector[0] * sampleStep, rayVector[1] * sampleStep, rayVector[2] * sampleStep);
@@ -311,6 +408,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         // Compute the number of times we need to sample
         double distance = VectorMath.distance(entryPoint, exitPoint);
         int nrSamples = 1 + (int) Math.floor(VectorMath.distance(entryPoint, exitPoint) / sampleStep);
+        
+        // System.out.println("nrSamples: " + nrSamples);
 
         //the current position is initialized as the entry point
         double[] currentPos = new double[3];
@@ -357,8 +456,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double[] lightVector = new double[3];
         //We define the light vector as directed toward the view point (which is the source of the light)
         // another light vector would be possible
+        //System.out.println("RayVector" + rayVector[0]+ rayVector[1]+rayVector[2]);
         VectorMath.setVector(lightVector, rayVector[0], rayVector[1], rayVector[2]);
-
+        
         // TODO 3: Implement isosurface rendering.
         //Initialization of the colors as floating point values
         double r, g, b;
@@ -366,11 +466,48 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double alpha = 0.0;
         double opacity = 0;
 
+        //compute the increment and the number of samples
+        double[] increments = new double[3];
+        VectorMath.setVector(increments, rayVector[0] * sampleStep, rayVector[1] * sampleStep, rayVector[2] * sampleStep);
+                
+        // Compute the number of times we need to sample
+        double distance = VectorMath.distance(entryPoint, exitPoint);
+        int nrSamples = 1 + (int) Math.floor(VectorMath.distance(entryPoint, exitPoint) / sampleStep);
+                
+        //the current position is initialized as the entry point
+        double[] currentPos = new double[3];
+        VectorMath.setVector(currentPos, entryPoint[0], entryPoint[1], entryPoint[2]);
+                
         // isoColorFront contains the isosurface color from the GUI
-        r = isoColorFront.r;
-        g = isoColorFront.g;
-        b = isoColorFront.b;
-        alpha = 1.0;
+        do {
+            // System.out.println("Inside DO loop");
+            int value = getVoxelTrilinear(currentPos);
+                    
+            if (value > isoValueFront) {    
+                r = isoColorFront.r;
+                g = isoColorFront.g;
+                b = isoColorFront.b;
+                alpha = 1.0;
+          
+            if (shadingMode) 
+              {
+                TFColor c = new TFColor(r,g,b,alpha);
+                VoxelGradient gradient = getGradientTrilinear(currentPos);
+                TFColor new_color =  computePhongShading(c,gradient , lightVector, rayVector);
+                r = new_color.r;
+                g = new_color.g;
+                b = new_color.b;
+              } 
+            }
+          
+            for (int i = 0; i < 3; i++) {
+                currentPos[i] += increments[i];
+            }
+           
+           nrSamples--;
+        } while (nrSamples > 0);
+      
+        
         //computes the color
         int color = computePackedPixelColor(r, g, b, alpha);
         return color;
@@ -393,6 +530,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
      */
     private int traceRayComposite(double[] entryPoint, double[] exitPoint, double[] rayVector, double sampleStep) {
         double[] lightVector = new double[3];
+        
+        // System.out.println("entryPoint: " + (int) entryPoint[0] + " " + (int) entryPoint[1] + " " + (int) entryPoint[2]);
+        // System.out.println("exitPoint: " + (int) exitPoint[0] + " " + (int) exitPoint[1] + " " + (int) exitPoint[2]);
 
         //the light vector is directed toward the view point (which is the source of the light)
         // another light vector would be possible 
@@ -404,16 +544,60 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double alpha = 0.0;
         double opacity = 0;
 
-        TFColor voxel_color = new TFColor();
+        TFColor voxel_color = new TFColor(0,0,0,0);
         TFColor colorAux = new TFColor();
+        
+        
+        // double[] rayVec = computeRayVector(exitPoint, entryPoint);
 
         // TODO 2: To be Implemented this function. Now, it just gives back a constant color depending on the mode
         switch (modeFront) {
             case COMPOSITING:
-                // 1D transfer function 
-                voxel_color.r = 1;
-                voxel_color.g = 0;
-                voxel_color.b = 0;
+                // 1D transfer function
+                
+                // System.out.println("Inside COMPOSITING");
+                
+                //compute the increment and the number of samples
+                double[] increments = new double[3];
+                VectorMath.setVector(increments, rayVector[0] * sampleStep, rayVector[1] * sampleStep, rayVector[2] * sampleStep);
+                
+                // Compute the number of times we need to sample
+                double distance = VectorMath.distance(entryPoint, exitPoint);
+                int nrSamples = 1 + (int) Math.floor(VectorMath.distance(entryPoint, exitPoint) / sampleStep);
+                // int nrSamples = 1 + (int) (distance / sampleStep);
+                
+                // System.out.println("nrSamples: " + nrSamples);
+                
+                //the current position is initialized as the entry point
+                double[] currentPos = new double[3];
+                VectorMath.setVector(currentPos, entryPoint[0], entryPoint[1], entryPoint[2]);
+                
+                // the current position is initialized as next point after the entry point
+                // VectorMath.setVector(currentPos, entryPoint[0]+increments[0], entryPoint[1]+increments[1], entryPoint[2]+increments[2]);
+                
+                do {
+                    
+                    // System.out.println("Inside DO loop");
+                    
+                    int value = getVoxelTrilinear(currentPos);
+                    
+                    // apply the transfer function to obtain the color
+                    colorAux = tFuncFront.getColor(value);
+                    
+                    voxel_color.r = colorAux.a * colorAux.r + (1 - colorAux.a)*voxel_color.r;
+                    voxel_color.g = colorAux.a * colorAux.g + (1 - colorAux.a)*voxel_color.g;
+                    voxel_color.b = colorAux.a * colorAux.b + (1 - colorAux.a)*voxel_color.b;
+                    
+                    for (int i = 0; i < 3; i++) {
+                        currentPos[i] += increments[i];
+                    }
+                    nrSamples--;
+                } while (nrSamples > 0);
+                
+                
+                // voxel_color.r = 1;
+                // voxel_color.g = 0;
+                // voxel_color.b = 0;
                 voxel_color.a = 1;
                 opacity = 1;
                 break;
@@ -445,6 +629,14 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         int color = computePackedPixelColor(r, g, b, alpha);
         return color;
     }
+    
+    private double[] computeRayVector(double[] exitPoint, double[] entryPoint) {
+        double[] v = new double[3];
+        v[0] = exitPoint[0] - entryPoint[0];
+        v[1] = exitPoint[1] - entryPoint[1];
+        v[2] = exitPoint[2] - entryPoint[2];
+        return v;
+    }
 
     /**
      * Compute Phong Shading given the voxel color (material color), gradient,
@@ -456,12 +648,64 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
      * @param rayVector View vector.
      * @return Computed color for Phong Shading.
      */
-    private TFColor computePhongShading(TFColor voxel_color, VoxelGradient gradient, double[] lightVector,
-            double[] rayVector) {
+    private TFColor computePhongShading(TFColor voxel_color, VoxelGradient gradient, double[] lightVector, double[] rayVector) {
 
         // TODO 7: Implement Phong Shading.
-        TFColor color = new TFColor(0, 0, 0, 1);
+         TFColor color = new TFColor(voxel_color.r, voxel_color.g, voxel_color.b, voxel_color.a);
+         
+         //Make sure that maginute of the gradient is non 0 to avoid division by 0.
+         // make sure the sure that the voxel is no transparent
+        if(gradient.mag > 0.0 && voxel_color.a > 0.0) {
 
+                // Set L = V to be the vector pointing from the point to our the eye/light
+                double[] LVec = lightVector;
+                double[] viewVec = rayVector;
+                double[] RVec = new double[3]; // R veector reflection (For standard model)
+                double[] NVec = new double[3]; // normal vector
+                double[] HVec = new double[3]; //For simplified model
+                
+                // Calculate normal vector N
+                NVec[0] = (double) gradient.x / (double) gradient.mag;
+                NVec[1] = (double) gradient.y / (double) gradient.mag;
+                NVec[2] = (double) gradient.z / (double) gradient.mag;
+
+                double[] sum_lv = new double[3];
+                sum_lv[0] = LVec[0] + viewVec[0];
+                sum_lv[1] = LVec[1] + viewVec[1];
+                sum_lv[2] = LVec[2] + viewVec[2];
+                
+                double sum_lv_mag = Math.sqrt(sum_lv[0]*sum_lv[0]+sum_lv[1]*sum_lv[1]+sum_lv[2]*sum_lv[2]);
+                
+                HVec[0] = sum_lv[0]/ sum_lv_mag;
+                HVec[1] = sum_lv[1]/ sum_lv_mag;
+                HVec[2] = sum_lv[2]/ sum_lv_mag;
+                
+                double ln = VectorMath.dotproduct(LVec, NVec);
+                double nh = VectorMath.dotproduct(NVec,HVec);
+                
+                //Compute R vector for standard model R= 2(L*N)*N -L
+                RVec = VectorMath.multiply(NVec, 2*ln, RVec);
+                RVec = VectorMath.difference(RVec, LVec, RVec);
+                double rv = VectorMath.dotproduct(RVec, viewVec);
+               
+                if (ln > 0 && nh > 0) {
+                    double k_a = 0.1;
+                    double k_d = 0.7;
+                    double k_s = 0.2;
+                    double alpha = 100;
+                    double i_a = 0.1;
+                    
+                    //Simplyfied phong
+//                    color.r = i_a + voxel_color.r*k_d * ln + k_s * Math.pow(nh, alpha);
+//                    color.g = i_a + voxel_color.g* k_d * ln + k_s * Math.pow(nh, alpha);
+//                    color.b = i_a + voxel_color.b* k_d * ln  + k_s * Math.pow(nh, alpha);
+                    
+                    //Standard phong
+                    color.r = voxel_color.r*k_a  +  voxel_color.r*k_d * ln + voxel_color.r*k_s * Math.pow(rv, alpha);
+                    color.g = voxel_color.g*k_a  + voxel_color.g* k_d * ln +  voxel_color.g*k_s * Math.pow(rv, alpha);
+                    color.b = voxel_color.b*k_a  + voxel_color.b* k_d * ln  + voxel_color.b*k_s * Math.pow(rv, alpha);
+                }
+         }
         return color;
     }
 
@@ -484,7 +728,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         // increment in the pixel domain in pixel units
         int increment = 1;
         // sample step in voxel units
+        
         int sampleStep = 1;
+        // int sampleStep = 10;
 
         // reset the image to black
         resetImage();
@@ -530,6 +776,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     int val = 0;
                     switch (modeFront) {
                         case COMPOSITING:
+                            val = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep);
+                            break;
                         case TRANSFER2D:
                             val = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep);
                             break;
