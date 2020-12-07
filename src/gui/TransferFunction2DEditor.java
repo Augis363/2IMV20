@@ -287,7 +287,7 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
             double value = Double.parseDouble(opacityLabel.getText());
             if (value < 0) {
                 value = 0;
-            } 
+            }
             if (value > 1.0) {
                 value = 1.0;
             }
