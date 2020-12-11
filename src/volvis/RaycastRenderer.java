@@ -194,6 +194,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             return 0;
         }
         
+        // x0, y0, z0 are the coordinates of the greatest integer less than or equal to the sample point coordinates within the vovel
+        // x1, y1, z1 are the coordinates of the greatest integer greater than or equal to the sample point coordinates within the vovel
         int x0 = (int) Math.floor(coord[0]);
         int y0 = (int) Math.floor(coord[1]);
         int z0 = (int) Math.floor(coord[2]);
@@ -201,6 +203,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         int y1 = y0 + 1;
         int z1 = z0 + 1;
         
+        // alpha, beta and gamma are the difference between the sample point coordinates 
+        // and coordinates of the greatest integer less than or equal to the sample point coordinates within the vovel
+        // these values will be used for trilinear interpolation computation
         double alpha = coord[0] - x0;
         double beta = coord[1] - y0;
         double gamma = coord[2] - z0;
@@ -225,7 +230,6 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         (1-alpha)*beta*gamma*volume.getVoxel(x0,y1,z1) +
                         alpha*beta*gamma*volume.getVoxel(x1,y1,z1) );
         
-        // return 0;
     }
 
     /**
@@ -265,20 +269,14 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private VoxelGradient getGradientTrilinear(double[] coord) {
         // TODO 6: Implement Tri-linear interpolation for gradients
         
+        // the gradient vector (diff_x, diff_y, diff_z) is computed from the corner points of the voxel
+        // by using trilinearinterpolation as shown in this getGradientTrilinear function
+        
         // Get coordinates
         double dx = coord[0];
         double dy = coord[1];
         double dz = coord[2];
 
-        // Verify they are inside the volume
-/*        if (dx < 0 || dx >= volume.getDimX()-1 ||
-                dy < 0 || dy >= volume.getDimY()-1 ||
-                dz < 0 || dz >= volume.getDimZ()-1) {
-
-            // If not, just return a zero gradient
-            return ZERO_GRADIENT;
-        }
-*/
 
         // Verify they are inside the volume gradient
         if (dx < 0 || dx > (gradients.getDimX() - 2) || dy < 0 || dy > (gradients.getDimY() - 2)
@@ -288,6 +286,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             return ZERO_GRADIENT;
         }
         
+        // x0, y0, z0 are the coordinates of the greatest integer less than or equal to the sample point coordinates within the vovel
+        // x1, y1, z1 are the coordinates of the greatest integer greater than or equal to the sample point coordinates within the vovel
         int x0 = (int) Math.floor(coord[0]);
         int y0 = (int) Math.floor(coord[1]);
         int z0 = (int) Math.floor(coord[2]);
@@ -295,10 +295,14 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         int y1 = y0 + 1;
         int z1 = z0 + 1;
         
+        // alpha, beta and gamma are the difference between the sample point coordinates 
+        // and coordinates of the greatest integer less than or equal to the sample point coordinates within the vovel
+        // these values will be used for trilinear interpolation computation
         float alpha = (float) (coord[0] - x0);
         float beta = (float) (coord[1] - y0);
         float gamma = (float) (coord[2] - z0);
         
+        // diff_x is the vector of the voxel gradient in x-axis direction
         float diff_x = (1-alpha)*(1-beta)*(1-gamma)*gradients.getGradient(x0,y0,z0).x +
                         alpha*(1-beta)*(1-gamma)*gradients.getGradient(x1,y0,z0).x +
                         (1-alpha)*beta*(1-gamma)*gradients.getGradient(x0,y1,z0).x + 
@@ -308,6 +312,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         (1-alpha)*beta*gamma*gradients.getGradient(x0,y1,z1).x +
                         alpha*beta*gamma*gradients.getGradient(x1,y1,z1).x;
         
+        // diff_y is the vector of the voxel gradient in y-axis direction
         float diff_y = (1-alpha)*(1-beta)*(1-gamma)*gradients.getGradient(x0,y0,z0).y +
                         alpha*(1-beta)*(1-gamma)*gradients.getGradient(x1,y0,z0).y +
                         (1-alpha)*beta*(1-gamma)*gradients.getGradient(x0,y1,z0).y + 
@@ -317,6 +322,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         (1-alpha)*beta*gamma*gradients.getGradient(x0,y1,z1).y +
                         alpha*beta*gamma*gradients.getGradient(x1,y1,z1).y;
         
+        // diff_z is the vector of the voxel gradient in z-axis direction
         float diff_z = (1-alpha)*(1-beta)*(1-gamma)*gradients.getGradient(x0,y0,z0).z +
                         alpha*(1-beta)*(1-gamma)*gradients.getGradient(x1,y0,z0).z +
                         (1-alpha)*beta*(1-gamma)*gradients.getGradient(x0,y1,z0).z + 
@@ -326,6 +332,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         (1-alpha)*beta*gamma*gradients.getGradient(x0,y1,z1).z +
                         alpha*beta*gamma*gradients.getGradient(x1,y1,z1).z;
         
+        // the vectors of the gradient vector is used to compute the gradient magnitude
+        // then, the vectors and magnitude is stored in grad
         VoxelGradient grad = new VoxelGradient(diff_x, diff_y, diff_z);
         
         return grad;
@@ -498,9 +506,11 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         // isoColorFront contains the isosurface color from the GUI
         do {                                                    
             int value = getVoxelTrilinear(currentPos);
-
-            if (useFront) {
+           
+            if (useFront) {     // default mode (if cutting plane mode is not selected)
                 if (value > isoValueFront) {
+                    // compare the value of the sample point within voxel with the isoValue from GUI
+                    // the Do loop will be terminated if the value of the sample point within voxel is greater than isoValue from GUI
                     r = isoColorFront.r;
                     g = isoColorFront.g;
                     b = isoColorFront.b;
@@ -508,8 +518,15 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     alpha = 1.0;
                     
                     if (shadingMode) {
+                        
                         // TFColor clr = new TFColor(r,g,b,alpha);
+                        
+                        // compute the gradient of the sample within the voxel from the corners points of the voxel
+                        // by using trilinear interpolation method
                         VoxelGradient gradient = getGradientTrilinear(currentPos);
+                        
+                        // computePhongShading function computes the illumination according to Phong Shading model
+                        // Local illumination (lecture note 2-spatial.pdf page 25)
                         TFColor new_color = computePhongShading(isoColorFront, gradient, lightVector, rayVector);
                         r = new_color.r;
                         g = new_color.g;
@@ -519,9 +536,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     break;
                 }                               
                 
-            } else {               
-                if (value > isoValueBack) {
-                    // System.out.println("inside isoValueBack: " + isoValueBack);
+            } else {               // Back mode on (if the cutting plane is selected)
+                if (value > isoValueBack) {                    
                     
                     r = isoColorBack.r;
                     g = isoColorBack.g;
@@ -530,7 +546,13 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     alpha = 1.0;
                     if (shadingMode) {
                         // TFColor clr = new TFColor(r,g,b,alpha);
+                        
+                        // compute the gradient of the sample within the voxel from the corners points of the voxel
+                        // by using trilinear interpolation method
                         VoxelGradient gradient = getGradientTrilinear(currentPos);
+                        
+                        // computePhongShading function computes the illumination according to Phong Shading model
+                        // Local illumination (lecture note 2-spatial.pdf page 25)
                         TFColor new_color = computePhongShading(isoColorBack, gradient, lightVector, rayVector);
                         r = new_color.r;
                         g = new_color.g;
@@ -601,10 +623,13 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         // TODO 2: To be Implemented this function. Now, it just gives back a constant color depending on the mode
         do {
         
+            // compute the intensity value of the sample point from the value of corner points of the voxel by using trilinear interpolation
             int value = getVoxelTrilinear(currentPos);
+            
+            // compute the gradient of the sample point from the value of corner points of the voxel by using trilinear interpolation
             VoxelGradient gradient = getGradientTrilinear(currentPos);
             
-            if (useFront) {
+            if (useFront) { // this is the default mode for volume rendering
                 switch (modeFront) {
                     case COMPOSITING:
                         // 1D transfer function
@@ -614,16 +639,19 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         
                     case TRANSFER2D:
                         // 2D transfer function
-                        double opct_from_gui = tfEditor2DFront.tf2D.color.a;
-                        
+                        double opct_from_gui = tfEditor2DFront.tf2D.color.a;    // obtain the opacity value from the GUI, this opacity value can be modified by the user via GUI
+
+                        // get the RGB values
                         colorAux.r = tFunc2DFront.color.r;
                         colorAux.g = tFunc2DFront.color.g;
                         colorAux.b = tFunc2DFront.color.b;
+                        // compute the opacity value with the 2D transfer function opacity value and opacity from GUI
+                        // computeOpacity2DTF function is used to implement the 2D transfer function opacity value computation based on the gradient value (between homogeneous and transition regions)
                         colorAux.a = opct_from_gui*computeOpacity2DTF((double)tFunc2DFront.baseIntensity, (double)tFunc2DFront.radius, (double)value, (double)gradient.mag);
                         break;
                 }
             } else {
-                switch (modeBack) {
+                switch (modeBack) { // this Back mode is selected if cutting plane mode is selected
                     case COMPOSITING:
                         // 1D transfer function
                         // apply the transfer function to obtain the color
@@ -634,33 +662,29 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         // 2D transfer function
                         double opct_from_gui = tfEditor2DFront.tf2D.color.a;
                         
+                        // get the RGB values
                         colorAux.r = tFunc2DBack.color.r;
                         colorAux.g = tFunc2DBack.color.g;
                         colorAux.b = tFunc2DBack.color.b;
+                        // compute the opacity value with the 2D transfer function opacity value and opacity from GUI of the Back mode 2D TF
+                        // computeOpacity2DTF function is used to implement the 2D transfer function opacity value computation based on the gradient value (between homogeneous and transition regions)
                         colorAux.a = opct_from_gui*computeOpacity2DTF((double)tFunc2DBack.baseIntensity, (double)tFunc2DBack.radius, (double)value, (double)gradient.mag);
                         break;
                 }
             }
             
-//            if (cuttingPlaneMode) {
-//                // check if the current position is above the cutting plane
-//                double[] toCutVec = new double[3];
-//                VectorMath.setVector(toCutVec, planePoint[0] - currentPos[0], 
-//                        planePoint[1] - currentPos[1], planePoint[2] - currentPos[2]);
-//                
-//                if ((VectorMath.dotproduct(planeNorm, toCutVec)<0 && !useFront) || 
-//                        (VectorMath.dotproduct(planeNorm, toCutVec)>=0 && useFront) ) {
-//                    voxel_color= new TFColor(0,0,0,0);
-//                }
-//            }
-            
             if (shadingMode) {
-                // shading mode on
+                // Phong shading mode on
+                // computePhongShading function computes the illumination according to Phong Shading model
+                // Local illumination (lecture note 2-spatial.pdf page 25)
                 TFColor voxelColorShading = computePhongShading(colorAux, gradient, lightVector, rayVector);
                 voxel_color.r = colorAux.a * voxelColorShading.r + (1 - colorAux.a)*voxel_color.r;
                 voxel_color.g = colorAux.a * voxelColorShading.g + (1 - colorAux.a)*voxel_color.g;
                 voxel_color.b = colorAux.a * voxelColorShading.b + (1 - colorAux.a)*voxel_color.b;
-            } else {
+            } else {    
+                // Phong model is not selected
+                // volume rendering equation with compositing order back-to-front
+                // lecture note 2-spatial.pdf page 34 
                 voxel_color.r = colorAux.a * colorAux.r + (1 - colorAux.a)*voxel_color.r;
                 voxel_color.g = colorAux.a * colorAux.g + (1 - colorAux.a)*voxel_color.g;
                 voxel_color.b = colorAux.a * colorAux.b + (1 - colorAux.a)*voxel_color.b;
@@ -703,13 +727,16 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         // TFColor color = new TFColor(0,0,0,1);
         TFColor color = new TFColor(voxel_color.r, voxel_color.g, voxel_color.b, voxel_color.a);
         
-        double kAmbient = 0.1;
-        double kDiff = 0.7;
-        double kSpec = 0.2;
-        double alpha = 100.0;                
-        //
-        if (gradient.mag > 0.0 && voxel_color.a > 0.0) {
-        //if (gradient.mag > 0.0) {
+        // illumination model of Phong [1975] combines three components in its formula:
+        // a)ambient light
+        // b)diffuse reflection
+        // c)specular reflection
+        double kAmbient = 0.1;      // kAmbient specifies the material properties
+        double kDiff = 0.7;         // kDiff specifies the diffuse reflection (a.k.a Lambertian reflection)
+        double kSpec = 0.2;         // kSpec descrides the overall intensity of specular reflection
+        double alpha = 100.0;       // the exponent alpha determines the sharpness of the specular highlights, i.e. the larger alpha is, the stronger th edrop-ff of the highlights
+        
+        if (gradient.mag > 0.0 && voxel_color.a > 0.0) {       
             // calculate the normal vector using the gradient vector
             double[] normal = new double[3];
             double[] N = new double[3];
@@ -770,8 +797,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         int increment = 1;
         // sample step in voxel units
         int sampleStep = 1;
-        // int sampleStep = 3;
         
+        // the increment=3 and sampleStep=2 are used only when interaction with mouse (rotate, zooming etc. of the object)
+        // the final volume rendering result is re-computed with increment=1 and sampleStep=1 after interacting with mouse
         if (interactiveMode) {
             increment = 3;
             sampleStep = 2;
@@ -826,53 +854,58 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
           
                     switch (modeFront) {
                         case COMPOSITING:
-                            val = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, true);
+                            val = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, true);    // 'true' is set for Front mode 
                             break;
                         case TRANSFER2D:
-                            val = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, true);
+                            val = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, true);    // 'true' is set for Front mode 
                             break;
                         case MIP:
-                            val = traceRayMIP(entryPoint, exitPoint, rayVector, sampleStep, true);
+                            val = traceRayMIP(entryPoint, exitPoint, rayVector, sampleStep, true);          // 'true' is set for Front mode 
                             break;
                         case ISO_SURFACE:
-                            val = traceRayIso(entryPoint, exitPoint, rayVector, sampleStep, true);
+                            val = traceRayIso(entryPoint, exitPoint, rayVector, sampleStep, true);          // 'true' is set for Front mode 
                             break;
                     }
                     
                     if (cuttingPlaneMode) {
                         switch(modeBack) {
                             case COMPOSITING:
-                                valBack = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, false);
+                                valBack = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, false);   // 'false' is set for Back mode
                                 break;
                             case TRANSFER2D:
-                                valBack = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, false);
+                                valBack = traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, false);   // 'false' is set for Back mode
                                 break;
                             case MIP:
-                                valBack = traceRayMIP(entryPoint, exitPoint, rayVector, sampleStep, false);
+                                valBack = traceRayMIP(entryPoint, exitPoint, rayVector, sampleStep, false);         // 'false' is set for Back mode
                                 break;
                             case ISO_SURFACE:
-                                valBack = traceRayIso(entryPoint, exitPoint, rayVector, sampleStep, false);
+                                valBack = traceRayIso(entryPoint, exitPoint, rayVector, sampleStep, false);         // 'false' is set for Back mode
                                 break;
                             case INVISIBLE:
                                 valBack = 0;
                                 break;
                         }
                 
-                // check if the current position is above the cutting plane
-                double[] toCutVec = new double[3];
-                VectorMath.setVector(toCutVec, planePoint[0] - entryPoint[0], 
-                        planePoint[1] - entryPoint[1], planePoint[2] - entryPoint[2]);
+                        // check if the current position is above the cutting plane
+                        double[] toCutVec = new double[3];      // toCutVec is the vector from the entry point to the cutting plane point
                 
-                if ((VectorMath.dotproduct(planeNorm, toCutVec)<0)) {
-                    chosen_val = val;
-                }
-                else
-                  {
-                        chosen_val = valBack;
+                        // planeNorm = normal vector of the cutting plane
+                        // toCutVec = vector between the entry point and the cutting plane                                
+                        VectorMath.setVector(toCutVec, planePoint[0] - entryPoint[0], 
+                                            planePoint[1] - entryPoint[1], planePoint[2] - entryPoint[2]);  
+                
+                        // dotproduct(planeNorm, toCutVec)<0 means the entry point is above the cutting plane
+                        if ((VectorMath.dotproduct(planeNorm, toCutVec)<0)) {
+                            chosen_val = val;
+                        }
+                        else
+                        {
+                            // if the entry point is below the cutting plane
+                            chosen_val = valBack;
 
-                  }
-               }
-                else
+                        }
+                    }
+                    else
                     {
                     chosen_val = val;
                     }
@@ -902,12 +935,14 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
      */
     public double computeOpacity2DTF(double material_value, double material_r,
             double voxelValue, double gradMagnitude) {
-
+        // TODO 8: Implement weight based opacity.
       
         double opacity = 0.0;
         double radius = material_r /gradients.getMaxGradientMagnitude();
         //double definedIntensity = tFunc2DFront.baseIntensity;
         
+        // determine the opacity for 2D TF based on the voxel value and voxel gradient magnitude
+        // as descride in the Levoy's paper [1988] in the section titled "Isovalue contour surfaces", equation (3)
         if (voxelValue == material_value && gradMagnitude == 0) {
             opacity =  1.0;
         } 
@@ -921,9 +956,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         {
             opacity = 0.0;
         }
-        // TODO 8: Implement weight based opacity.
-               
-                        
+                                               
         return opacity;
     }
 

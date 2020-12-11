@@ -55,28 +55,33 @@ public class GradientVolume {
     private void compute() {
         // TODO 4: Implement gradient computation.
         // this just initializes all gradients to the vector (0,0,0)
+
+
+        // compute the gradient vector and magnitude of each voxel for 2D transfer function
+        // this gradient parameter is used to determine the boundaries between the homogeneous region and transition region in the object
+        // first, the gradient difference in the voxel in x-axis, y-axis and z-axis directions is computed, this is the gradient vector
+        // then, the gradient magnitude of this gradient vector is computed
+        // these gradient vector and magnitude are stored in the respective voxel
         for (int i = 0; i < data.length; i++) {
             data[i] = zero;
         }
-        
-        
-        for (int x=1; x<volume.getDimX()-1;x++) {
-            for (int y=1; y<volume.getDimY()-1;y++) {
-                for (int z=1; z<volume.getDimZ()-1;z++) {
-
-                    float dx = ((volume.getVoxel(x-1, y, z) - volume.getVoxel(x+1, y, z)) / 2.0f);
-                    float dy = ((volume.getVoxel(x, y-1, z) - volume.getVoxel(x, y+1, z)) / 2.0f);
-                    float dz = ((volume.getVoxel(x, y, z-1) - volume.getVoxel(x, y, z+1)) / 2.0f);
-
-                    // get the value of the VoxelGradient based on the calculated dx, dy and dz
-                    VoxelGradient value = new VoxelGradient(dx,dy,dz);
-                    // set the VoxelGradient
+        for (int x = 1; x < volume.getDimX() - 1; x++) {
+            for (int y = 1; y < volume.getDimY() - 1; y++) {
+                for (int z = 1; z < volume.getDimZ() - 1; z++) {
+                    float dx = (float) ((volume.getVoxel(x - 1, y, z) - volume.getVoxel(x + 1, y, z)) / 2.0);
+                    float dy = (float) ((volume.getVoxel(x, y - 1, z) - volume.getVoxel(x, y + 1, z)) / 2.0);
+                    float dz = (float) ((volume.getVoxel(x, y, z - 1) - volume.getVoxel(x, y, z + 1)) / 2.0);
+                    
+                    // get the value of the VoxelGradient based on the calculated dx, dy, dz
+                    VoxelGradient value = new VoxelGradient(dx, dy, dz);
+                    
+                    //set the VoxelGradient
                     this.setGradient(x, y, z, value);
+                    // setGradient(x, y, z, value);
                 }
             }
-
-        }
-
+        }        
+        
     }
 
     public double getMaxGradientMagnitude() {
