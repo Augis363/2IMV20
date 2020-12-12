@@ -1,0 +1,594 @@
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span>   <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">short</span> <span style="color: #0000FF">getVoxelTrilinear</span>(<span style="color: #B00040">double</span><span style="color: #666666">[]</span> coord) {
+        <span style="color: #408080; font-style: italic">// TODO 1: Implement Tri-Linear interpolation and use it in your code</span>
+        <span style="color: #408080; font-style: italic">// instead of getVoxel().</span>
+        
+            
+        <span style="color: #408080; font-style: italic">// Get coordinates</span>
+        <span style="color: #B00040">double</span> dx <span style="color: #666666">=</span> coord<span style="color: #666666">[0]</span>, dy <span style="color: #666666">=</span> coord<span style="color: #666666">[1]</span>, dz <span style="color: #666666">=</span> coord<span style="color: #666666">[2]</span>;
+
+        <span style="color: #408080; font-style: italic">// Verify they are inside the volume</span>
+        <span style="color: #008000; font-weight: bold">if</span> (dx <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">||</span> dx <span style="color: #666666">&gt;=</span> volume.<span style="color: #7D9029">getDimX</span>()<span style="color: #666666">-1</span> <span style="color: #666666">||</span> dy <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">||</span> dy <span style="color: #666666">&gt;=</span> volume.<span style="color: #7D9029">getDimY</span>()<span style="color: #666666">-1</span>
+                <span style="color: #666666">||</span> dz <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">||</span> dz <span style="color: #666666">&gt;=</span> volume.<span style="color: #7D9029">getDimZ</span>()<span style="color: #666666">-1</span>) {
+
+            <span style="color: #408080; font-style: italic">// If not, just return 0</span>
+            <span style="color: #008000; font-weight: bold">return</span> <span style="color: #666666">0</span>;
+        }
+        
+        <span style="color: #408080; font-style: italic">// x0, y0, z0 are the coordinates of the greatest integer less than or equal to the sample point coordinates within the vovel</span>
+        <span style="color: #408080; font-style: italic">// x1, y1, z1 are the coordinates of the greatest integer greater than or equal to the sample point coordinates within the vovel</span>
+        <span style="color: #B00040">int</span> x0 <span style="color: #666666">=</span> (<span style="color: #B00040">int</span>) Math.<span style="color: #7D9029">floor</span>(coord<span style="color: #666666">[0]</span>);
+        <span style="color: #B00040">int</span> y0 <span style="color: #666666">=</span> (<span style="color: #B00040">int</span>) Math.<span style="color: #7D9029">floor</span>(coord<span style="color: #666666">[1]</span>);
+        <span style="color: #B00040">int</span> z0 <span style="color: #666666">=</span> (<span style="color: #B00040">int</span>) Math.<span style="color: #7D9029">floor</span>(coord<span style="color: #666666">[2]</span>);
+        <span style="color: #B00040">int</span> x1 <span style="color: #666666">=</span> x0 <span style="color: #666666">+</span> <span style="color: #666666">1</span>;
+        <span style="color: #B00040">int</span> y1 <span style="color: #666666">=</span> y0 <span style="color: #666666">+</span> <span style="color: #666666">1</span>;
+        <span style="color: #B00040">int</span> z1 <span style="color: #666666">=</span> z0 <span style="color: #666666">+</span> <span style="color: #666666">1</span>;
+        
+        <span style="color: #408080; font-style: italic">// alpha, beta and gamma are the difference between the sample point coordinates </span>
+        <span style="color: #408080; font-style: italic">// and coordinates of the greatest integer less than or equal to the sample point coordinates within the vovel</span>
+        <span style="color: #408080; font-style: italic">// these values will be used for trilinear interpolation computation</span>
+        <span style="color: #B00040">double</span> alpha <span style="color: #666666">=</span> coord<span style="color: #666666">[0]</span> <span style="color: #666666">-</span> x0;
+        <span style="color: #B00040">double</span> beta <span style="color: #666666">=</span> coord<span style="color: #666666">[1]</span> <span style="color: #666666">-</span> y0;
+        <span style="color: #B00040">double</span> gamma <span style="color: #666666">=</span> coord<span style="color: #666666">[2]</span> <span style="color: #666666">-</span> z0;
+        
+               
+        <span style="color: #408080; font-style: italic">// tri-linear interpolation (lecture note 2-spatial.pdf page 7)</span>
+        <span style="color: #008000; font-weight: bold">return</span> (<span style="color: #B00040">short</span>)( (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>volume.<span style="color: #7D9029">getVoxel</span>(x0,y0,z0) <span style="color: #666666">+</span>
+                        alpha<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>volume.<span style="color: #7D9029">getVoxel</span>(x1,y0,z0) <span style="color: #666666">+</span>
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>volume.<span style="color: #7D9029">getVoxel</span>(x0,y1,z0) <span style="color: #666666">+</span> 
+                        alpha<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>volume.<span style="color: #7D9029">getVoxel</span>(x1,y1,z0) <span style="color: #666666">+</span> 
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>volume.<span style="color: #7D9029">getVoxel</span>(x0,y0,z1) <span style="color: #666666">+</span> 
+                        alpha<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>volume.<span style="color: #7D9029">getVoxel</span>(x1,y0,z1) <span style="color: #666666">+</span>
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>volume.<span style="color: #7D9029">getVoxel</span>(x0,y1,z1) <span style="color: #666666">+</span>
+                        alpha<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>volume.<span style="color: #7D9029">getVoxel</span>(x1,y1,z1) );
+        
+    }
+
+
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">traceRayIso</span>(<span style="color: #B00040">double</span><span style="color: #666666">[]</span> entryPoint, <span style="color: #B00040">double</span><span style="color: #666666">[]</span> exitPoint, <span style="color: #B00040">double</span><span style="color: #666666">[]</span> rayVector, <span style="color: #B00040">double</span> sampleStep, <span style="color: #B00040">boolean</span> useFront) {
+
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> lightVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        <span style="color: #408080; font-style: italic">// We define the light vector as directed toward the view point (which is the source of the light)</span>
+        <span style="color: #408080; font-style: italic">// another light vector would be possible</span>
+        VectorMath.<span style="color: #7D9029">setVector</span>(lightVector, rayVector<span style="color: #666666">[0]</span>, rayVector<span style="color: #666666">[1]</span>, rayVector<span style="color: #666666">[2]</span>);
+
+        <span style="color: #408080; font-style: italic">// TODO 3: Implement isosurface rendering.</span>
+        <span style="color: #408080; font-style: italic">//Initialization of the colors as floating point values</span>
+        <span style="color: #B00040">double</span> r, g, b;
+        r <span style="color: #666666">=</span> g <span style="color: #666666">=</span> b <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+        <span style="color: #B00040">double</span> alpha <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+        <span style="color: #B00040">double</span> opacity <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+
+        <span style="color: #408080; font-style: italic">//compute the increment and the number of samples</span>
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> increments <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        VectorMath.<span style="color: #7D9029">setVector</span>(increments, rayVector<span style="color: #666666">[0]</span> <span style="color: #666666">*</span> sampleStep, rayVector<span style="color: #666666">[1]</span> <span style="color: #666666">*</span> sampleStep, rayVector<span style="color: #666666">[2]</span> <span style="color: #666666">*</span> sampleStep);
+                
+        <span style="color: #408080; font-style: italic">// Compute the number of times we need to sample</span>
+        <span style="color: #B00040">double</span> distance <span style="color: #666666">=</span> VectorMath.<span style="color: #7D9029">distance</span>(entryPoint, exitPoint);
+        <span style="color: #B00040">int</span> nrSamples <span style="color: #666666">=</span> <span style="color: #666666">1</span> <span style="color: #666666">+</span> (<span style="color: #B00040">int</span>) Math.<span style="color: #7D9029">floor</span>(VectorMath.<span style="color: #7D9029">distance</span>(entryPoint, exitPoint) <span style="color: #666666">/</span> sampleStep);        
+                
+        <span style="color: #408080; font-style: italic">//the current position is initialized as the entry point</span>
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> currentPos <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        VectorMath.<span style="color: #7D9029">setVector</span>(currentPos, entryPoint<span style="color: #666666">[0]</span>, entryPoint<span style="color: #666666">[1]</span>, entryPoint<span style="color: #666666">[2]</span>);      
+                
+        <span style="color: #408080; font-style: italic">// isoColorFront contains the isosurface color from the GUI</span>
+        <span style="color: #008000; font-weight: bold">do</span> {                                                    
+            <span style="color: #B00040">int</span> value <span style="color: #666666">=</span> getVoxelTrilinear(currentPos);
+           
+            <span style="color: #008000; font-weight: bold">if</span> (useFront) {     <span style="color: #408080; font-style: italic">// default mode (if cutting plane mode is not selected)</span>
+                <span style="color: #008000; font-weight: bold">if</span> (value <span style="color: #666666">&gt;</span> isoValueFront) {
+                    <span style="color: #408080; font-style: italic">// compare the value of the sample point within voxel with the isoValue from GUI</span>
+                    <span style="color: #408080; font-style: italic">// the Do loop will be terminated if the value of the sample point within voxel is greater than isoValue from GUI</span>
+                    r <span style="color: #666666">=</span> isoColorFront.<span style="color: #7D9029">r</span>;
+                    g <span style="color: #666666">=</span> isoColorFront.<span style="color: #7D9029">g</span>;
+                    b <span style="color: #666666">=</span> isoColorFront.<span style="color: #7D9029">b</span>;
+                    
+                    alpha <span style="color: #666666">=</span> <span style="color: #666666">1.0</span>;
+                    
+                    <span style="color: #008000; font-weight: bold">if</span> (shadingMode) {
+                        
+                        <span style="color: #408080; font-style: italic">// TFColor clr = new TFColor(r,g,b,alpha);</span>
+                        
+                        <span style="color: #408080; font-style: italic">// compute the gradient of the sample within the voxel from the corners points of the voxel</span>
+                        <span style="color: #408080; font-style: italic">// by using trilinear interpolation method</span>
+                        VoxelGradient gradient <span style="color: #666666">=</span> getGradientTrilinear(currentPos);
+                        
+                        <span style="color: #408080; font-style: italic">// computePhongShading function computes the illumination according to Phong Shading model</span>
+                        <span style="color: #408080; font-style: italic">// Local illumination (lecture note 2-spatial.pdf page 25)</span>
+                        TFColor new_color <span style="color: #666666">=</span> computePhongShading(isoColorFront, gradient, lightVector, rayVector);
+                        r <span style="color: #666666">=</span> new_color.<span style="color: #7D9029">r</span>;
+                        g <span style="color: #666666">=</span> new_color.<span style="color: #7D9029">g</span>;
+                        b <span style="color: #666666">=</span> new_color.<span style="color: #7D9029">b</span>;
+                    
+                    }
+                    <span style="color: #008000; font-weight: bold">break</span>;
+                }                               
+                
+            } <span style="color: #008000; font-weight: bold">else</span> {               <span style="color: #408080; font-style: italic">// Back mode on (if the cutting plane is selected)</span>
+                <span style="color: #008000; font-weight: bold">if</span> (value <span style="color: #666666">&gt;</span> isoValueBack) {                    
+                    
+                    r <span style="color: #666666">=</span> isoColorBack.<span style="color: #7D9029">r</span>;
+                    g <span style="color: #666666">=</span> isoColorBack.<span style="color: #7D9029">g</span>;
+                    b <span style="color: #666666">=</span> isoColorBack.<span style="color: #7D9029">b</span>;
+                    
+                    alpha <span style="color: #666666">=</span> <span style="color: #666666">1.0</span>;
+                    <span style="color: #008000; font-weight: bold">if</span> (shadingMode) {
+                        <span style="color: #408080; font-style: italic">// TFColor clr = new TFColor(r,g,b,alpha);</span>
+                        
+                        <span style="color: #408080; font-style: italic">// compute the gradient of the sample within the voxel from the corners points of the voxel</span>
+                        <span style="color: #408080; font-style: italic">// by using trilinear interpolation method</span>
+                        VoxelGradient gradient <span style="color: #666666">=</span> getGradientTrilinear(currentPos);
+                        
+                        <span style="color: #408080; font-style: italic">// computePhongShading function computes the illumination according to Phong Shading model</span>
+                        <span style="color: #408080; font-style: italic">// Local illumination (lecture note 2-spatial.pdf page 25)</span>
+                        TFColor new_color <span style="color: #666666">=</span> computePhongShading(isoColorBack, gradient, lightVector, rayVector);
+                        r <span style="color: #666666">=</span> new_color.<span style="color: #7D9029">r</span>;
+                        g <span style="color: #666666">=</span> new_color.<span style="color: #7D9029">g</span>;
+                        b <span style="color: #666666">=</span> new_color.<span style="color: #7D9029">b</span>;
+                    }
+                    <span style="color: #008000; font-weight: bold">break</span>;
+                }                                
+            }
+
+            
+                                
+            <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> <span style="color: #666666">3</span>; i<span style="color: #666666">++</span>) {
+                currentPos<span style="color: #666666">[</span>i<span style="color: #666666">]</span> <span style="color: #666666">+=</span> increments<span style="color: #666666">[</span>i<span style="color: #666666">]</span>;
+            }
+            
+            nrSamples<span style="color: #666666">--</span>;
+            
+        } <span style="color: #008000; font-weight: bold">while</span> (nrSamples <span style="color: #666666">&gt;</span> <span style="color: #666666">0</span>);
+        
+        <span style="color: #408080; font-style: italic">//computes the color</span>
+        <span style="color: #B00040">int</span> color <span style="color: #666666">=</span> computePackedPixelColor(r, g, b, alpha);
+        <span style="color: #008000; font-weight: bold">return</span> color;
+    }
+
+
+  <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">int</span> <span style="color: #0000FF">traceRayComposite</span>(<span style="color: #B00040">double</span><span style="color: #666666">[]</span> entryPoint, <span style="color: #B00040">double</span><span style="color: #666666">[]</span> exitPoint, <span style="color: #B00040">double</span><span style="color: #666666">[]</span> rayVector, <span style="color: #B00040">double</span> sampleStep, <span style="color: #B00040">boolean</span> useFront) {
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> lightVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;                
+
+        <span style="color: #408080; font-style: italic">//the light vector is directed toward the view point (which is the source of the light)</span>
+        <span style="color: #408080; font-style: italic">// another light vector would be possible </span>
+        VectorMath.<span style="color: #7D9029">setVector</span>(lightVector, <span style="color: #666666">-</span>rayVector<span style="color: #666666">[0]</span>, <span style="color: #666666">-</span>rayVector<span style="color: #666666">[1]</span>,<span style="color: #666666">-</span>rayVector<span style="color: #666666">[2]</span>);
+
+        <span style="color: #408080; font-style: italic">//Initialization of the colors as floating point values</span>
+        <span style="color: #B00040">double</span> r, g, b;
+        r <span style="color: #666666">=</span> g <span style="color: #666666">=</span> b <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+        <span style="color: #B00040">double</span> alpha <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+        <span style="color: #B00040">double</span> opacity <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+
+        TFColor voxel_color <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> TFColor(<span style="color: #666666">0</span>,<span style="color: #666666">0</span>,<span style="color: #666666">0</span>,<span style="color: #666666">0</span>);
+        TFColor colorAux <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> TFColor();              
+        
+        <span style="color: #408080; font-style: italic">//compute the increment and the number of samples</span>
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> increments <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        VectorMath.<span style="color: #7D9029">setVector</span>(increments, rayVector<span style="color: #666666">[0]</span> <span style="color: #666666">*</span> sampleStep, rayVector<span style="color: #666666">[1]</span> <span style="color: #666666">*</span> sampleStep, rayVector<span style="color: #666666">[2]</span> <span style="color: #666666">*</span> sampleStep);
+                
+        <span style="color: #408080; font-style: italic">// Compute the number of times we need to sample</span>
+        <span style="color: #B00040">double</span> distance <span style="color: #666666">=</span> VectorMath.<span style="color: #7D9029">distance</span>(entryPoint, exitPoint);
+        <span style="color: #B00040">int</span> nrSamples <span style="color: #666666">=</span> <span style="color: #666666">1</span> <span style="color: #666666">+</span> (<span style="color: #B00040">int</span>) Math.<span style="color: #7D9029">floor</span>(VectorMath.<span style="color: #7D9029">distance</span>(entryPoint, exitPoint) <span style="color: #666666">/</span> sampleStep);                       
+                
+        <span style="color: #408080; font-style: italic">//the current position is initialized as the entry point</span>
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> currentPos <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        VectorMath.<span style="color: #7D9029">setVector</span>(currentPos, entryPoint<span style="color: #666666">[0]</span>, entryPoint<span style="color: #666666">[1]</span>, entryPoint<span style="color: #666666">[2]</span>);
+
+        <span style="color: #408080; font-style: italic">// TODO 2: To be Implemented this function. Now, it just gives back a constant color depending on the mode</span>
+        <span style="color: #008000; font-weight: bold">do</span> {
+        
+            <span style="color: #408080; font-style: italic">// compute the intensity value of the sample point from the value of corner points of the voxel by using trilinear interpolation</span>
+            <span style="color: #B00040">int</span> value <span style="color: #666666">=</span> getVoxelTrilinear(currentPos);
+            
+            <span style="color: #408080; font-style: italic">// compute the gradient of the sample point from the value of corner points of the voxel by using trilinear interpolation</span>
+            VoxelGradient gradient <span style="color: #666666">=</span> getGradientTrilinear(currentPos);
+            
+            <span style="color: #008000; font-weight: bold">if</span> (useFront) { <span style="color: #408080; font-style: italic">// this is the default mode for volume rendering</span>
+                <span style="color: #008000; font-weight: bold">switch</span> (modeFront) {
+                    <span style="color: #008000; font-weight: bold">case</span> COMPOSITING:
+                        <span style="color: #408080; font-style: italic">// 1D transfer function</span>
+                        <span style="color: #408080; font-style: italic">// apply the transfer function to obtain the color</span>
+                        colorAux <span style="color: #666666">=</span> tFuncFront.<span style="color: #7D9029">getColor</span>(value);
+                        <span style="color: #008000; font-weight: bold">break</span>;
+                        
+                    <span style="color: #008000; font-weight: bold">case</span> TRANSFER2D:
+                        <span style="color: #408080; font-style: italic">// 2D transfer function</span>
+                        <span style="color: #B00040">double</span> opct_from_gui <span style="color: #666666">=</span> tfEditor2DFront.<span style="color: #7D9029">tf2D</span>.<span style="color: #7D9029">color</span>.<span style="color: #7D9029">a</span>;    <span style="color: #408080; font-style: italic">// obtain the opacity value from the GUI, this opacity value can be modified by the user via GUI</span>
+
+                        <span style="color: #408080; font-style: italic">// get the RGB values</span>
+                        colorAux.<span style="color: #7D9029">r</span> <span style="color: #666666">=</span> tFunc2DFront.<span style="color: #7D9029">color</span>.<span style="color: #7D9029">r</span>;
+                        colorAux.<span style="color: #7D9029">g</span> <span style="color: #666666">=</span> tFunc2DFront.<span style="color: #7D9029">color</span>.<span style="color: #7D9029">g</span>;
+                        colorAux.<span style="color: #7D9029">b</span> <span style="color: #666666">=</span> tFunc2DFront.<span style="color: #7D9029">color</span>.<span style="color: #7D9029">b</span>;
+                        <span style="color: #408080; font-style: italic">// compute the opacity value with the 2D transfer function opacity value and opacity from GUI</span>
+                        <span style="color: #408080; font-style: italic">// computeOpacity2DTF function is used to implement the 2D transfer function opacity value computation based on the gradient value (between homogeneous and transition regions)</span>
+                        colorAux.<span style="color: #7D9029">a</span> <span style="color: #666666">=</span> opct_from_gui<span style="color: #666666">*</span>computeOpacity2DTF((<span style="color: #B00040">double</span>)tFunc2DFront.<span style="color: #7D9029">baseIntensity</span>, (<span style="color: #B00040">double</span>)tFunc2DFront.<span style="color: #7D9029">radius</span>, (<span style="color: #B00040">double</span>)value, (<span style="color: #B00040">double</span>)gradient.<span style="color: #7D9029">mag</span>);
+                        <span style="color: #008000; font-weight: bold">break</span>;
+                }
+            } <span style="color: #008000; font-weight: bold">else</span> {
+                <span style="color: #008000; font-weight: bold">switch</span> (modeBack) { <span style="color: #408080; font-style: italic">// this Back mode is selected if cutting plane mode is selected</span>
+                    <span style="color: #008000; font-weight: bold">case</span> COMPOSITING:
+                        <span style="color: #408080; font-style: italic">// 1D transfer function</span>
+                        <span style="color: #408080; font-style: italic">// apply the transfer function to obtain the color</span>
+                        colorAux <span style="color: #666666">=</span> tFuncBack.<span style="color: #7D9029">getColor</span>(value);
+                        <span style="color: #008000; font-weight: bold">break</span>;
+                        
+                    <span style="color: #008000; font-weight: bold">case</span> TRANSFER2D:
+                        <span style="color: #408080; font-style: italic">// 2D transfer function</span>
+                        <span style="color: #B00040">double</span> opct_from_gui <span style="color: #666666">=</span> tfEditor2DFront.<span style="color: #7D9029">tf2D</span>.<span style="color: #7D9029">color</span>.<span style="color: #7D9029">a</span>;
+                        
+                        <span style="color: #408080; font-style: italic">// get the RGB values</span>
+                        colorAux.<span style="color: #7D9029">r</span> <span style="color: #666666">=</span> tFunc2DBack.<span style="color: #7D9029">color</span>.<span style="color: #7D9029">r</span>;
+                        colorAux.<span style="color: #7D9029">g</span> <span style="color: #666666">=</span> tFunc2DBack.<span style="color: #7D9029">color</span>.<span style="color: #7D9029">g</span>;
+                        colorAux.<span style="color: #7D9029">b</span> <span style="color: #666666">=</span> tFunc2DBack.<span style="color: #7D9029">color</span>.<span style="color: #7D9029">b</span>;
+                        <span style="color: #408080; font-style: italic">// compute the opacity value with the 2D transfer function opacity value and opacity from GUI of the Back mode 2D TF</span>
+                        <span style="color: #408080; font-style: italic">// computeOpacity2DTF function is used to implement the 2D transfer function opacity value computation based on the gradient value (between homogeneous and transition regions)</span>
+                        colorAux.<span style="color: #7D9029">a</span> <span style="color: #666666">=</span> opct_from_gui<span style="color: #666666">*</span>computeOpacity2DTF((<span style="color: #B00040">double</span>)tFunc2DBack.<span style="color: #7D9029">baseIntensity</span>, (<span style="color: #B00040">double</span>)tFunc2DBack.<span style="color: #7D9029">radius</span>, (<span style="color: #B00040">double</span>)value, (<span style="color: #B00040">double</span>)gradient.<span style="color: #7D9029">mag</span>);
+                        <span style="color: #008000; font-weight: bold">break</span>;
+                }
+            }
+            
+            <span style="color: #008000; font-weight: bold">if</span> (shadingMode) {
+                <span style="color: #408080; font-style: italic">// Phong shading mode on</span>
+                <span style="color: #408080; font-style: italic">// computePhongShading function computes the illumination according to Phong Shading model</span>
+                <span style="color: #408080; font-style: italic">// Local illumination (lecture note 2-spatial.pdf page 25)</span>
+                TFColor voxelColorShading <span style="color: #666666">=</span> computePhongShading(colorAux, gradient, lightVector, rayVector);
+                voxel_color.<span style="color: #7D9029">r</span> <span style="color: #666666">=</span> colorAux.<span style="color: #7D9029">a</span> <span style="color: #666666">*</span> voxelColorShading.<span style="color: #7D9029">r</span> <span style="color: #666666">+</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> colorAux.<span style="color: #7D9029">a</span>)<span style="color: #666666">*</span>voxel_color.<span style="color: #7D9029">r</span>;
+                voxel_color.<span style="color: #7D9029">g</span> <span style="color: #666666">=</span> colorAux.<span style="color: #7D9029">a</span> <span style="color: #666666">*</span> voxelColorShading.<span style="color: #7D9029">g</span> <span style="color: #666666">+</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> colorAux.<span style="color: #7D9029">a</span>)<span style="color: #666666">*</span>voxel_color.<span style="color: #7D9029">g</span>;
+                voxel_color.<span style="color: #7D9029">b</span> <span style="color: #666666">=</span> colorAux.<span style="color: #7D9029">a</span> <span style="color: #666666">*</span> voxelColorShading.<span style="color: #7D9029">b</span> <span style="color: #666666">+</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> colorAux.<span style="color: #7D9029">a</span>)<span style="color: #666666">*</span>voxel_color.<span style="color: #7D9029">b</span>;
+            } <span style="color: #008000; font-weight: bold">else</span> {    
+                <span style="color: #408080; font-style: italic">// Phong model is not selected</span>
+                <span style="color: #408080; font-style: italic">// volume rendering equation with compositing order back-to-front</span>
+                <span style="color: #408080; font-style: italic">// lecture note 2-spatial.pdf page 34 </span>
+                voxel_color.<span style="color: #7D9029">r</span> <span style="color: #666666">=</span> colorAux.<span style="color: #7D9029">a</span> <span style="color: #666666">*</span> colorAux.<span style="color: #7D9029">r</span> <span style="color: #666666">+</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> colorAux.<span style="color: #7D9029">a</span>)<span style="color: #666666">*</span>voxel_color.<span style="color: #7D9029">r</span>;
+                voxel_color.<span style="color: #7D9029">g</span> <span style="color: #666666">=</span> colorAux.<span style="color: #7D9029">a</span> <span style="color: #666666">*</span> colorAux.<span style="color: #7D9029">g</span> <span style="color: #666666">+</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> colorAux.<span style="color: #7D9029">a</span>)<span style="color: #666666">*</span>voxel_color.<span style="color: #7D9029">g</span>;
+                voxel_color.<span style="color: #7D9029">b</span> <span style="color: #666666">=</span> colorAux.<span style="color: #7D9029">a</span> <span style="color: #666666">*</span> colorAux.<span style="color: #7D9029">b</span> <span style="color: #666666">+</span> (<span style="color: #666666">1</span> <span style="color: #666666">-</span> colorAux.<span style="color: #7D9029">a</span>)<span style="color: #666666">*</span>voxel_color.<span style="color: #7D9029">b</span>;
+            }
+            
+            <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> <span style="color: #666666">3</span>; i<span style="color: #666666">++</span>) {
+                currentPos<span style="color: #666666">[</span>i<span style="color: #666666">]</span> <span style="color: #666666">+=</span> increments<span style="color: #666666">[</span>i<span style="color: #666666">]</span>;
+            }
+            nrSamples<span style="color: #666666">--</span>;
+        } <span style="color: #008000; font-weight: bold">while</span> (nrSamples <span style="color: #666666">&gt;</span> <span style="color: #666666">0</span>);
+ 
+        
+        opacity <span style="color: #666666">=</span> <span style="color: #666666">1</span>;
+        
+        r <span style="color: #666666">=</span> voxel_color.<span style="color: #7D9029">r</span>;
+        g <span style="color: #666666">=</span> voxel_color.<span style="color: #7D9029">g</span>;
+        b <span style="color: #666666">=</span> voxel_color.<span style="color: #7D9029">b</span>;
+        alpha <span style="color: #666666">=</span> opacity;
+
+
+        <span style="color: #408080; font-style: italic">//computes the color</span>
+        <span style="color: #B00040">int</span> color <span style="color: #666666">=</span> computePackedPixelColor(r, g, b, alpha);
+        <span style="color: #008000; font-weight: bold">return</span> color;
+    }
+
+   <span style="color: #008000; font-weight: bold">private</span> TFColor <span style="color: #0000FF">computePhongShading</span>(TFColor voxel_color, VoxelGradient gradient, <span style="color: #B00040">double</span><span style="color: #666666">[]</span> lightVector,
+            <span style="color: #B00040">double</span><span style="color: #666666">[]</span> rayVector) {        
+        
+        <span style="color: #408080; font-style: italic">// TODO 7: Implement Phong Shading.</span>
+        <span style="color: #408080; font-style: italic">// TFColor color = new TFColor(0,0,0,1);</span>
+        TFColor color <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> TFColor(voxel_color.<span style="color: #7D9029">r</span>, voxel_color.<span style="color: #7D9029">g</span>, voxel_color.<span style="color: #7D9029">b</span>, voxel_color.<span style="color: #7D9029">a</span>);
+        
+        <span style="color: #408080; font-style: italic">// illumination model of Phong [1975] combines three components in its formula:</span>
+        <span style="color: #408080; font-style: italic">// a)ambient light</span>
+        <span style="color: #408080; font-style: italic">// b)diffuse reflection</span>
+        <span style="color: #408080; font-style: italic">// c)specular reflection</span>
+        <span style="color: #B00040">double</span> kAmbient <span style="color: #666666">=</span> <span style="color: #666666">0.1</span>;      <span style="color: #408080; font-style: italic">// kAmbient specifies the material properties</span>
+        <span style="color: #B00040">double</span> kDiff <span style="color: #666666">=</span> <span style="color: #666666">0.7</span>;         <span style="color: #408080; font-style: italic">// kDiff specifies the diffuse reflection (a.k.a Lambertian reflection)</span>
+        <span style="color: #B00040">double</span> kSpec <span style="color: #666666">=</span> <span style="color: #666666">0.2</span>;         <span style="color: #408080; font-style: italic">// kSpec descrides the overall intensity of specular reflection</span>
+        <span style="color: #B00040">double</span> alpha <span style="color: #666666">=</span> <span style="color: #666666">100.0</span>;       <span style="color: #408080; font-style: italic">// the exponent alpha determines the sharpness of the specular highlights, i.e. the larger alpha is, the stronger th edrop-ff of the highlights</span>
+        
+        <span style="color: #008000; font-weight: bold">if</span> (gradient.<span style="color: #7D9029">mag</span> <span style="color: #666666">&gt;</span> <span style="color: #666666">0.0</span> <span style="color: #666666">&amp;&amp;</span> voxel_color.<span style="color: #7D9029">a</span> <span style="color: #666666">&gt;</span> <span style="color: #666666">0.0</span>) {       
+            <span style="color: #408080; font-style: italic">// calculate the normal vector using the gradient vector</span>
+            <span style="color: #B00040">double</span><span style="color: #666666">[]</span> normal <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+            <span style="color: #B00040">double</span><span style="color: #666666">[]</span> N <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+            VectorMath.<span style="color: #7D9029">setVector</span>(normal, gradient.<span style="color: #7D9029">x</span>, gradient.<span style="color: #7D9029">y</span>, gradient.<span style="color: #7D9029">z</span>);
+            VectorMath.<span style="color: #7D9029">normalize</span>(normal, N);    
+            
+        
+            <span style="color: #408080; font-style: italic">// View vector, V is equal to ray vector</span>
+            <span style="color: #408080; font-style: italic">// according to the full Phong model mentioned in the lecture video (Lecture 03-a)</span>
+            <span style="color: #B00040">double</span><span style="color: #666666">[]</span> V <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span> <span style="color: #666666">[3]</span>;
+            VectorMath.<span style="color: #7D9029">setVector</span>(V, rayVector<span style="color: #666666">[0]</span>, rayVector<span style="color: #666666">[1]</span>, rayVector<span style="color: #666666">[2]</span>);
+                        
+            <span style="color: #408080; font-style: italic">// set Light vector L</span>
+            <span style="color: #B00040">double</span><span style="color: #666666">[]</span> L <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+            VectorMath.<span style="color: #7D9029">setVector</span>(L, <span style="color: #666666">-</span>lightVector<span style="color: #666666">[0]</span>, <span style="color: #666666">-</span>lightVector<span style="color: #666666">[1]</span>, <span style="color: #666666">-</span>lightVector<span style="color: #666666">[2]</span>);
+                                                
+            <span style="color: #408080; font-style: italic">// compute the dot product of lightVector L and N</span>
+            <span style="color: #B00040">double</span> ln <span style="color: #666666">=</span> VectorMath.<span style="color: #7D9029">dotproduct</span>(L, N);
+            
+            <span style="color: #408080; font-style: italic">// computation of the reflection vector R (= 2*(N dot L)*N - L)</span>
+            <span style="color: #408080; font-style: italic">// according to the full Phong model mentioned in the lecture video (Lecture 03-a)</span>
+            <span style="color: #B00040">double</span> ln2 <span style="color: #666666">=</span> <span style="color: #666666">2*</span>ln;
+            <span style="color: #B00040">double</span><span style="color: #666666">[]</span> R <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;          
+            <span style="color: #B00040">double</span><span style="color: #666666">[]</span> ln2N <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;      <span style="color: #408080; font-style: italic">// initalize array for 2*(N dot L)*N part in the refection vector R (= 2*(N dot L)*N - L)            </span>
+            VectorMath.<span style="color: #7D9029">difference</span>(VectorMath.<span style="color: #7D9029">multiply</span>(N, ln2, ln2N), L, R);      <span style="color: #408080; font-style: italic">// computation of R = 2*(N dot L)*N - L</span>
+            
+            <span style="color: #408080; font-style: italic">// compute the dot product of V and R</span>
+            <span style="color: #B00040">double</span> vr <span style="color: #666666">=</span> VectorMath.<span style="color: #7D9029">dotproduct</span>(V, R);   
+            
+            <span style="color: #408080; font-style: italic">// formulas only apply when dot products are positive</span>
+            <span style="color: #408080; font-style: italic">// according to the full Phong model mentioned in the lecture video (Lecture 03-a)          </span>
+            color.<span style="color: #7D9029">r</span> <span style="color: #666666">=</span> (voxel_color.<span style="color: #7D9029">r</span> <span style="color: #666666">*</span> kAmbient) <span style="color: #666666">+</span> (voxel_color.<span style="color: #7D9029">r</span> <span style="color: #666666">*</span> kDiff <span style="color: #666666">*</span> Math.<span style="color: #7D9029">max</span>(ln, <span style="color: #666666">0.0</span>)) <span style="color: #666666">+</span> (voxel_color.<span style="color: #7D9029">r</span> <span style="color: #666666">*</span> kSpec <span style="color: #666666">*</span> Math.<span style="color: #7D9029">pow</span>(Math.<span style="color: #7D9029">max</span>(vr, <span style="color: #666666">0.0</span>), alpha));
+            color.<span style="color: #7D9029">g</span> <span style="color: #666666">=</span> (voxel_color.<span style="color: #7D9029">g</span> <span style="color: #666666">*</span> kAmbient) <span style="color: #666666">+</span> (voxel_color.<span style="color: #7D9029">g</span> <span style="color: #666666">*</span> kDiff <span style="color: #666666">*</span> Math.<span style="color: #7D9029">max</span>(ln, <span style="color: #666666">0.0</span>)) <span style="color: #666666">+</span> (voxel_color.<span style="color: #7D9029">g</span> <span style="color: #666666">*</span> kSpec <span style="color: #666666">*</span> Math.<span style="color: #7D9029">pow</span>(Math.<span style="color: #7D9029">max</span>(vr, <span style="color: #666666">0.0</span>), alpha));
+            color.<span style="color: #7D9029">b</span> <span style="color: #666666">=</span> (voxel_color.<span style="color: #7D9029">b</span> <span style="color: #666666">*</span> kAmbient) <span style="color: #666666">+</span> (voxel_color.<span style="color: #7D9029">b</span> <span style="color: #666666">*</span> kDiff <span style="color: #666666">*</span> Math.<span style="color: #7D9029">max</span>(ln, <span style="color: #666666">0.0</span>)) <span style="color: #666666">+</span> (voxel_color.<span style="color: #7D9029">b</span> <span style="color: #666666">*</span> kSpec <span style="color: #666666">*</span> Math.<span style="color: #7D9029">pow</span>(Math.<span style="color: #7D9029">max</span>(vr, <span style="color: #666666">0.0</span>), alpha));            
+            
+        }
+        
+        <span style="color: #008000; font-weight: bold">return</span> color;
+    }
+
+
+   <span style="color: #B00040">void</span> <span style="color: #0000FF">raycast</span>(<span style="color: #B00040">double</span><span style="color: #666666">[]</span> viewMatrix) {
+        <span style="color: #408080; font-style: italic">//data allocation</span>
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> viewVec <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> uVec <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> vVec <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> pixelCoord <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> entryPoint <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> exitPoint <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+
+        <span style="color: #408080; font-style: italic">// TODO 5: Limited modification is needed</span>
+        <span style="color: #408080; font-style: italic">// increment in the pixel domain in pixel units</span>
+        <span style="color: #B00040">int</span> increment <span style="color: #666666">=</span> <span style="color: #666666">1</span>;
+        <span style="color: #408080; font-style: italic">// sample step in voxel units</span>
+        <span style="color: #B00040">int</span> sampleStep <span style="color: #666666">=</span> <span style="color: #666666">1</span>;
+        
+        <span style="color: #408080; font-style: italic">// the increment=3 and sampleStep=2 are used only when interaction with mouse (rotate, zooming etc. of the object)</span>
+        <span style="color: #408080; font-style: italic">// the final volume rendering result is re-computed with increment=1 and sampleStep=1 after interacting with mouse</span>
+        <span style="color: #008000; font-weight: bold">if</span> (interactiveMode) {
+            increment <span style="color: #666666">=</span> <span style="color: #666666">3</span>;
+            sampleStep <span style="color: #666666">=</span> <span style="color: #666666">2</span>;
+        }
+
+        <span style="color: #408080; font-style: italic">// reset the image to black</span>
+        resetImage();
+
+        <span style="color: #408080; font-style: italic">// vector uVec and vVec define a plane through the origin,</span>
+        <span style="color: #408080; font-style: italic">// perpendicular to the view vector viewVec which is going from the view point towards the object</span>
+        <span style="color: #408080; font-style: italic">// uVec contains the up vector of the camera in world coordinates (image vertical)</span>
+        <span style="color: #408080; font-style: italic">// vVec contains the horizontal vector in world coordinates (image horizontal)</span>
+        VectorMath.<span style="color: #7D9029">setVector</span>(viewVec, viewMatrix<span style="color: #666666">[2]</span>, viewMatrix<span style="color: #666666">[6]</span>, viewMatrix<span style="color: #666666">[10]</span>);
+        VectorMath.<span style="color: #7D9029">setVector</span>(uVec, viewMatrix<span style="color: #666666">[0]</span>, viewMatrix<span style="color: #666666">[4]</span>, viewMatrix<span style="color: #666666">[8]</span>);
+        VectorMath.<span style="color: #7D9029">setVector</span>(vVec, viewMatrix<span style="color: #666666">[1]</span>, viewMatrix<span style="color: #666666">[5]</span>, viewMatrix<span style="color: #666666">[9]</span>);
+
+        <span style="color: #408080; font-style: italic">// We get the size of the image/texture we will be puting the result of the </span>
+        <span style="color: #408080; font-style: italic">// volume rendering operation.</span>
+        <span style="color: #B00040">int</span> imageW <span style="color: #666666">=</span> image.<span style="color: #7D9029">getWidth</span>();
+        <span style="color: #B00040">int</span> imageH <span style="color: #666666">=</span> image.<span style="color: #7D9029">getHeight</span>();
+
+        <span style="color: #B00040">int</span><span style="color: #666666">[]</span> imageCenter <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">int</span><span style="color: #666666">[2]</span>;
+        <span style="color: #408080; font-style: italic">// Center of the image/texture </span>
+        imageCenter<span style="color: #666666">[0]</span> <span style="color: #666666">=</span> imageW <span style="color: #666666">/</span> <span style="color: #666666">2</span>;
+        imageCenter<span style="color: #666666">[1]</span> <span style="color: #666666">=</span> imageH <span style="color: #666666">/</span> <span style="color: #666666">2</span>;
+
+        <span style="color: #408080; font-style: italic">//The rayVector is pointing towards the scene</span>
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> rayVector <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        rayVector<span style="color: #666666">[0]</span> <span style="color: #666666">=</span> <span style="color: #666666">-</span>viewVec<span style="color: #666666">[0]</span>;
+        rayVector<span style="color: #666666">[1]</span> <span style="color: #666666">=</span> <span style="color: #666666">-</span>viewVec<span style="color: #666666">[1]</span>;
+        rayVector<span style="color: #666666">[2]</span> <span style="color: #666666">=</span> <span style="color: #666666">-</span>viewVec<span style="color: #666666">[2]</span>;
+
+        <span style="color: #408080; font-style: italic">// compute the volume center</span>
+        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> volumeCenter <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;
+        VectorMath.<span style="color: #7D9029">setVector</span>(volumeCenter, volume.<span style="color: #7D9029">getDimX</span>() <span style="color: #666666">/</span> <span style="color: #666666">2</span>, volume.<span style="color: #7D9029">getDimY</span>() <span style="color: #666666">/</span> <span style="color: #666666">2</span>, volume.<span style="color: #7D9029">getDimZ</span>() <span style="color: #666666">/</span> <span style="color: #666666">2</span>);
+        
+        
+        <span style="color: #B00040">int</span> val <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+        <span style="color: #B00040">int</span> valBack <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+        <span style="color: #B00040">int</span> chosen_val <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+        <span style="color: #408080; font-style: italic">// ray computation for each pixel</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> j <span style="color: #666666">=</span> imageCenter<span style="color: #666666">[1]</span> <span style="color: #666666">-</span> imageH <span style="color: #666666">/</span> <span style="color: #666666">2</span>; j <span style="color: #666666">&lt;</span> imageCenter<span style="color: #666666">[1]</span> <span style="color: #666666">+</span> imageH <span style="color: #666666">/</span> <span style="color: #666666">2</span>; j <span style="color: #666666">+=</span> increment) {
+            <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> i <span style="color: #666666">=</span> imageCenter<span style="color: #666666">[0]</span> <span style="color: #666666">-</span> imageW <span style="color: #666666">/</span> <span style="color: #666666">2</span>; i <span style="color: #666666">&lt;</span> imageCenter<span style="color: #666666">[0]</span> <span style="color: #666666">+</span> imageW <span style="color: #666666">/</span> <span style="color: #666666">2</span>; i <span style="color: #666666">+=</span> increment) {
+                <span style="color: #408080; font-style: italic">// compute starting points of rays in a plane shifted backwards to a position behind the data set</span>
+                computePixelCoordinatesBehindFloat(pixelCoord, viewVec, uVec, vVec, i, j);
+                <span style="color: #408080; font-style: italic">// compute the entry and exit point of the ray</span>
+                computeEntryAndExit(pixelCoord, rayVector, entryPoint, exitPoint);
+
+                <span style="color: #408080; font-style: italic">// TODO 9: Implement logic for cutting plane.</span>
+                <span style="color: #008000; font-weight: bold">if</span> ((entryPoint<span style="color: #666666">[0]</span> <span style="color: #666666">&gt;</span> <span style="color: #666666">-1.0</span>) <span style="color: #666666">&amp;&amp;</span> (exitPoint<span style="color: #666666">[0]</span> <span style="color: #666666">&gt;</span> <span style="color: #666666">-1.0</span>)) {
+                    
+          
+                    <span style="color: #008000; font-weight: bold">switch</span> (modeFront) {
+                        <span style="color: #008000; font-weight: bold">case</span> COMPOSITING:
+                            val <span style="color: #666666">=</span> traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, <span style="color: #008000; font-weight: bold">true</span>);    <span style="color: #408080; font-style: italic">// 'true' is set for Front mode </span>
+                            <span style="color: #008000; font-weight: bold">break</span>;
+                        <span style="color: #008000; font-weight: bold">case</span> TRANSFER2D:
+                            val <span style="color: #666666">=</span> traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, <span style="color: #008000; font-weight: bold">true</span>);    <span style="color: #408080; font-style: italic">// 'true' is set for Front mode </span>
+                            <span style="color: #008000; font-weight: bold">break</span>;
+                        <span style="color: #008000; font-weight: bold">case</span> MIP:
+                            val <span style="color: #666666">=</span> traceRayMIP(entryPoint, exitPoint, rayVector, sampleStep, <span style="color: #008000; font-weight: bold">true</span>);          <span style="color: #408080; font-style: italic">// 'true' is set for Front mode </span>
+                            <span style="color: #008000; font-weight: bold">break</span>;
+                        <span style="color: #008000; font-weight: bold">case</span> ISO_SURFACE:
+                            val <span style="color: #666666">=</span> traceRayIso(entryPoint, exitPoint, rayVector, sampleStep, <span style="color: #008000; font-weight: bold">true</span>);          <span style="color: #408080; font-style: italic">// 'true' is set for Front mode </span>
+                            <span style="color: #008000; font-weight: bold">break</span>;
+                    }
+                    
+                    <span style="color: #008000; font-weight: bold">if</span> (cuttingPlaneMode) {
+                        <span style="color: #008000; font-weight: bold">switch</span>(modeBack) {
+                            <span style="color: #008000; font-weight: bold">case</span> COMPOSITING:
+                                valBack <span style="color: #666666">=</span> traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, <span style="color: #008000; font-weight: bold">false</span>);   <span style="color: #408080; font-style: italic">// 'false' is set for Back mode</span>
+                                <span style="color: #008000; font-weight: bold">break</span>;
+                            <span style="color: #008000; font-weight: bold">case</span> TRANSFER2D:
+                                valBack <span style="color: #666666">=</span> traceRayComposite(entryPoint, exitPoint, rayVector, sampleStep, <span style="color: #008000; font-weight: bold">false</span>);   <span style="color: #408080; font-style: italic">// 'false' is set for Back mode</span>
+                                <span style="color: #008000; font-weight: bold">break</span>;
+                            <span style="color: #008000; font-weight: bold">case</span> MIP:
+                                valBack <span style="color: #666666">=</span> traceRayMIP(entryPoint, exitPoint, rayVector, sampleStep, <span style="color: #008000; font-weight: bold">false</span>);         <span style="color: #408080; font-style: italic">// 'false' is set for Back mode</span>
+                                <span style="color: #008000; font-weight: bold">break</span>;
+                            <span style="color: #008000; font-weight: bold">case</span> ISO_SURFACE:
+                                valBack <span style="color: #666666">=</span> traceRayIso(entryPoint, exitPoint, rayVector, sampleStep, <span style="color: #008000; font-weight: bold">false</span>);         <span style="color: #408080; font-style: italic">// 'false' is set for Back mode</span>
+                                <span style="color: #008000; font-weight: bold">break</span>;
+                            <span style="color: #008000; font-weight: bold">case</span> INVISIBLE:
+                                valBack <span style="color: #666666">=</span> <span style="color: #666666">0</span>;
+                                <span style="color: #008000; font-weight: bold">break</span>;
+                        }
+                
+                        <span style="color: #408080; font-style: italic">// check if the current position is above the cutting plane</span>
+                        <span style="color: #B00040">double</span><span style="color: #666666">[]</span> toCutVec <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> <span style="color: #B00040">double</span><span style="color: #666666">[3]</span>;      <span style="color: #408080; font-style: italic">// toCutVec is the vector from the entry point to the cutting plane point</span>
+                
+                        <span style="color: #408080; font-style: italic">// planeNorm = normal vector of the cutting plane</span>
+                        <span style="color: #408080; font-style: italic">// toCutVec = vector between the entry point and the cutting plane                                </span>
+                        VectorMath.<span style="color: #7D9029">setVector</span>(toCutVec, planePoint<span style="color: #666666">[0]</span> <span style="color: #666666">-</span> entryPoint<span style="color: #666666">[0]</span>, 
+                                            planePoint<span style="color: #666666">[1]</span> <span style="color: #666666">-</span> entryPoint<span style="color: #666666">[1]</span>, planePoint<span style="color: #666666">[2]</span> <span style="color: #666666">-</span> entryPoint<span style="color: #666666">[2]</span>);  
+                
+                        <span style="color: #408080; font-style: italic">// dotproduct(planeNorm, toCutVec)&lt;0 means the entry point is above the cutting plane</span>
+                        <span style="color: #008000; font-weight: bold">if</span> ((VectorMath.<span style="color: #7D9029">dotproduct</span>(planeNorm, toCutVec)<span style="color: #666666">&lt;0</span>)) {
+                            chosen_val <span style="color: #666666">=</span> val;
+                        }
+                        <span style="color: #008000; font-weight: bold">else</span>
+                        {
+                            <span style="color: #408080; font-style: italic">// if the entry point is below the cutting plane</span>
+                            chosen_val <span style="color: #666666">=</span> valBack;
+
+                        }
+                    }
+                    <span style="color: #008000; font-weight: bold">else</span>
+                    {
+                    chosen_val <span style="color: #666666">=</span> val;
+                    }
+                    
+                    <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> ii <span style="color: #666666">=</span> i; ii <span style="color: #666666">&lt;</span> i <span style="color: #666666">+</span> increment; ii<span style="color: #666666">++</span>) {
+                        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> jj <span style="color: #666666">=</span> j; jj <span style="color: #666666">&lt;</span> j <span style="color: #666666">+</span> increment; jj<span style="color: #666666">++</span>) {
+                            image.<span style="color: #7D9029">setRGB</span>(ii, jj, chosen_val);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">compute</span>() {
+        <span style="color: #408080; font-style: italic">// TODO 4: Implement gradient computation.</span>
+        <span style="color: #408080; font-style: italic">// this just initializes all gradients to the vector (0,0,0)</span>
+
+
+        <span style="color: #408080; font-style: italic">// compute the gradient vector and magnitude of each voxel for 2D transfer function</span>
+        <span style="color: #408080; font-style: italic">// this gradient parameter is used to determine the boundaries between the homogeneous region and transition region in the object</span>
+        <span style="color: #408080; font-style: italic">// first, the gradient difference in the voxel in x-axis, y-axis and z-axis directions is computed, this is the gradient vector</span>
+        <span style="color: #408080; font-style: italic">// then, the gradient magnitude of this gradient vector is computed</span>
+        <span style="color: #408080; font-style: italic">// these gradient vector and magnitude are stored in the respective voxel</span>
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> i <span style="color: #666666">=</span> <span style="color: #666666">0</span>; i <span style="color: #666666">&lt;</span> data.<span style="color: #7D9029">length</span>; i<span style="color: #666666">++</span>) {
+            data<span style="color: #666666">[</span>i<span style="color: #666666">]</span> <span style="color: #666666">=</span> zero;
+        }
+        <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> x <span style="color: #666666">=</span> <span style="color: #666666">1</span>; x <span style="color: #666666">&lt;</span> volume.<span style="color: #7D9029">getDimX</span>() <span style="color: #666666">-</span> <span style="color: #666666">1</span>; x<span style="color: #666666">++</span>) {
+            <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> y <span style="color: #666666">=</span> <span style="color: #666666">1</span>; y <span style="color: #666666">&lt;</span> volume.<span style="color: #7D9029">getDimY</span>() <span style="color: #666666">-</span> <span style="color: #666666">1</span>; y<span style="color: #666666">++</span>) {
+                <span style="color: #008000; font-weight: bold">for</span> (<span style="color: #B00040">int</span> z <span style="color: #666666">=</span> <span style="color: #666666">1</span>; z <span style="color: #666666">&lt;</span> volume.<span style="color: #7D9029">getDimZ</span>() <span style="color: #666666">-</span> <span style="color: #666666">1</span>; z<span style="color: #666666">++</span>) {
+                    <span style="color: #B00040">float</span> dx <span style="color: #666666">=</span> (<span style="color: #B00040">float</span>) ((volume.<span style="color: #7D9029">getVoxel</span>(x <span style="color: #666666">-</span> <span style="color: #666666">1</span>, y, z) <span style="color: #666666">-</span> volume.<span style="color: #7D9029">getVoxel</span>(x <span style="color: #666666">+</span> <span style="color: #666666">1</span>, y, z)) <span style="color: #666666">/</span> <span style="color: #666666">2.0</span>);
+                    <span style="color: #B00040">float</span> dy <span style="color: #666666">=</span> (<span style="color: #B00040">float</span>) ((volume.<span style="color: #7D9029">getVoxel</span>(x, y <span style="color: #666666">-</span> <span style="color: #666666">1</span>, z) <span style="color: #666666">-</span> volume.<span style="color: #7D9029">getVoxel</span>(x, y <span style="color: #666666">+</span> <span style="color: #666666">1</span>, z)) <span style="color: #666666">/</span> <span style="color: #666666">2.0</span>);
+                    <span style="color: #B00040">float</span> dz <span style="color: #666666">=</span> (<span style="color: #B00040">float</span>) ((volume.<span style="color: #7D9029">getVoxel</span>(x, y, z <span style="color: #666666">-</span> <span style="color: #666666">1</span>) <span style="color: #666666">-</span> volume.<span style="color: #7D9029">getVoxel</span>(x, y, z <span style="color: #666666">+</span> <span style="color: #666666">1</span>)) <span style="color: #666666">/</span> <span style="color: #666666">2.0</span>);
+                    
+                    <span style="color: #408080; font-style: italic">// get the value of the VoxelGradient based on the calculated dx, dy, dz</span>
+                    VoxelGradient value <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> VoxelGradient(dx, dy, dz);
+                    
+                    <span style="color: #408080; font-style: italic">//set the VoxelGradient</span>
+                    <span style="color: #008000; font-weight: bold">this</span>.<span style="color: #7D9029">setGradient</span>(x, y, z, value);
+                    
+                }
+            }
+        }        
+        
+    }
+
+    <span style="color: #008000; font-weight: bold">private</span> VoxelGradient <span style="color: #0000FF">getGradientTrilinear</span>(<span style="color: #B00040">double</span><span style="color: #666666">[]</span> coord) {
+        <span style="color: #408080; font-style: italic">// TODO 6: Implement Tri-linear interpolation for gradients</span>
+        
+        <span style="color: #408080; font-style: italic">// the gradient vector (diff_x, diff_y, diff_z) is computed from the corner points of the voxel</span>
+        <span style="color: #408080; font-style: italic">// by using trilinearinterpolation as shown in this getGradientTrilinear function</span>
+        
+        <span style="color: #408080; font-style: italic">// Get coordinates</span>
+        <span style="color: #B00040">double</span> dx <span style="color: #666666">=</span> coord<span style="color: #666666">[0]</span>;
+        <span style="color: #B00040">double</span> dy <span style="color: #666666">=</span> coord<span style="color: #666666">[1]</span>;
+        <span style="color: #B00040">double</span> dz <span style="color: #666666">=</span> coord<span style="color: #666666">[2]</span>;
+
+
+        <span style="color: #408080; font-style: italic">// Verify they are inside the volume gradient</span>
+        <span style="color: #008000; font-weight: bold">if</span> (dx <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">||</span> dx <span style="color: #666666">&gt;</span> (gradients.<span style="color: #7D9029">getDimX</span>() <span style="color: #666666">-</span> <span style="color: #666666">2</span>) <span style="color: #666666">||</span> dy <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">||</span> dy <span style="color: #666666">&gt;</span> (gradients.<span style="color: #7D9029">getDimY</span>() <span style="color: #666666">-</span> <span style="color: #666666">2</span>)
+                <span style="color: #666666">||</span> dz <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span> <span style="color: #666666">||</span> dz <span style="color: #666666">&gt;</span> (gradients.<span style="color: #7D9029">getDimZ</span>() <span style="color: #666666">-</span> <span style="color: #666666">2</span>)) {
+
+            <span style="color: #408080; font-style: italic">// If not, just return a zero gradient</span>
+            <span style="color: #008000; font-weight: bold">return</span> ZERO_GRADIENT;
+        }
+        
+        <span style="color: #408080; font-style: italic">// x0, y0, z0 are the coordinates of the greatest integer less than or equal to the sample point coordinates within the vovel</span>
+        <span style="color: #408080; font-style: italic">// x1, y1, z1 are the coordinates of the greatest integer greater than or equal to the sample point coordinates within the vovel</span>
+        <span style="color: #B00040">int</span> x0 <span style="color: #666666">=</span> (<span style="color: #B00040">int</span>) Math.<span style="color: #7D9029">floor</span>(coord<span style="color: #666666">[0]</span>);
+        <span style="color: #B00040">int</span> y0 <span style="color: #666666">=</span> (<span style="color: #B00040">int</span>) Math.<span style="color: #7D9029">floor</span>(coord<span style="color: #666666">[1]</span>);
+        <span style="color: #B00040">int</span> z0 <span style="color: #666666">=</span> (<span style="color: #B00040">int</span>) Math.<span style="color: #7D9029">floor</span>(coord<span style="color: #666666">[2]</span>);
+        <span style="color: #B00040">int</span> x1 <span style="color: #666666">=</span> x0 <span style="color: #666666">+</span> <span style="color: #666666">1</span>;
+        <span style="color: #B00040">int</span> y1 <span style="color: #666666">=</span> y0 <span style="color: #666666">+</span> <span style="color: #666666">1</span>;
+        <span style="color: #B00040">int</span> z1 <span style="color: #666666">=</span> z0 <span style="color: #666666">+</span> <span style="color: #666666">1</span>;
+        
+        <span style="color: #408080; font-style: italic">// alpha, beta and gamma are the difference between the sample point coordinates </span>
+        <span style="color: #408080; font-style: italic">// and coordinates of the greatest integer less than or equal to the sample point coordinates within the vovel</span>
+        <span style="color: #408080; font-style: italic">// these values will be used for trilinear interpolation computation</span>
+        <span style="color: #B00040">float</span> alpha <span style="color: #666666">=</span> (<span style="color: #B00040">float</span>) (coord<span style="color: #666666">[0]</span> <span style="color: #666666">-</span> x0);
+        <span style="color: #B00040">float</span> beta <span style="color: #666666">=</span> (<span style="color: #B00040">float</span>) (coord<span style="color: #666666">[1]</span> <span style="color: #666666">-</span> y0);
+        <span style="color: #B00040">float</span> gamma <span style="color: #666666">=</span> (<span style="color: #B00040">float</span>) (coord<span style="color: #666666">[2]</span> <span style="color: #666666">-</span> z0);
+        
+        <span style="color: #408080; font-style: italic">// diff_x is the vector of the voxel gradient in x-axis direction</span>
+        <span style="color: #B00040">float</span> diff_x <span style="color: #666666">=</span> (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y0,z0).<span style="color: #7D9029">x</span> <span style="color: #666666">+</span>
+                        alpha<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y0,z0).<span style="color: #7D9029">x</span> <span style="color: #666666">+</span>
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y1,z0).<span style="color: #7D9029">x</span> <span style="color: #666666">+</span> 
+                        alpha<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y1,z0).<span style="color: #7D9029">x</span> <span style="color: #666666">+</span> 
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y0,z1).<span style="color: #7D9029">x</span> <span style="color: #666666">+</span> 
+                        alpha<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y0,z1).<span style="color: #7D9029">x</span> <span style="color: #666666">+</span>
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y1,z1).<span style="color: #7D9029">x</span> <span style="color: #666666">+</span>
+                        alpha<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y1,z1).<span style="color: #7D9029">x</span>;
+        
+        <span style="color: #408080; font-style: italic">// diff_y is the vector of the voxel gradient in y-axis direction</span>
+        <span style="color: #B00040">float</span> diff_y <span style="color: #666666">=</span> (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y0,z0).<span style="color: #7D9029">y</span> <span style="color: #666666">+</span>
+                        alpha<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y0,z0).<span style="color: #7D9029">y</span> <span style="color: #666666">+</span>
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y1,z0).<span style="color: #7D9029">y</span> <span style="color: #666666">+</span> 
+                        alpha<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y1,z0).<span style="color: #7D9029">y</span> <span style="color: #666666">+</span> 
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y0,z1).<span style="color: #7D9029">y</span> <span style="color: #666666">+</span> 
+                        alpha<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y0,z1).<span style="color: #7D9029">y</span> <span style="color: #666666">+</span>
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y1,z1).<span style="color: #7D9029">y</span> <span style="color: #666666">+</span>
+                        alpha<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y1,z1).<span style="color: #7D9029">y</span>;
+        
+        <span style="color: #408080; font-style: italic">// diff_z is the vector of the voxel gradient in z-axis direction</span>
+        <span style="color: #B00040">float</span> diff_z <span style="color: #666666">=</span> (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y0,z0).<span style="color: #7D9029">z</span> <span style="color: #666666">+</span>
+                        alpha<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y0,z0).<span style="color: #7D9029">z</span> <span style="color: #666666">+</span>
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y1,z0).<span style="color: #7D9029">z</span> <span style="color: #666666">+</span> 
+                        alpha<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>gamma)<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y1,z0).<span style="color: #7D9029">z</span> <span style="color: #666666">+</span> 
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y0,z1).<span style="color: #7D9029">z</span> <span style="color: #666666">+</span> 
+                        alpha<span style="color: #666666">*</span>(<span style="color: #666666">1-</span>beta)<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y0,z1).<span style="color: #7D9029">z</span> <span style="color: #666666">+</span>
+                        (<span style="color: #666666">1-</span>alpha)<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x0,y1,z1).<span style="color: #7D9029">z</span> <span style="color: #666666">+</span>
+                        alpha<span style="color: #666666">*</span>beta<span style="color: #666666">*</span>gamma<span style="color: #666666">*</span>gradients.<span style="color: #7D9029">getGradient</span>(x1,y1,z1).<span style="color: #7D9029">z</span>;
+        
+        <span style="color: #408080; font-style: italic">// the vectors of the gradient vector is used to compute the gradient magnitude</span>
+        <span style="color: #408080; font-style: italic">// then, the vectors and magnitude is stored in grad</span>
+        VoxelGradient grad <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> VoxelGradient(diff_x, diff_y, diff_z);
+        
+        <span style="color: #008000; font-weight: bold">return</span> grad;
+    }
+
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">double</span> <span style="color: #0000FF">computeOpacity2DTF</span>(<span style="color: #B00040">double</span> material_value, <span style="color: #B00040">double</span> material_r,
+            <span style="color: #B00040">double</span> voxelValue, <span style="color: #B00040">double</span> gradMagnitude) {
+        <span style="color: #408080; font-style: italic">// TODO 8: Implement weight based opacity.</span>
+      
+        <span style="color: #B00040">double</span> opacity <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+        <span style="color: #B00040">double</span> radius <span style="color: #666666">=</span> material_r <span style="color: #666666">/</span>gradients.<span style="color: #7D9029">getMaxGradientMagnitude</span>();
+        <span style="color: #408080; font-style: italic">//double definedIntensity = tFunc2DFront.baseIntensity;</span>
+        
+        <span style="color: #408080; font-style: italic">// determine the opacity for 2D TF based on the voxel value and voxel gradient magnitude</span>
+        <span style="color: #408080; font-style: italic">// as descride in the Levoy's paper [1988] in the section titled "Isovalue contour surfaces", equation (3)</span>
+        <span style="color: #008000; font-weight: bold">if</span> (voxelValue <span style="color: #666666">==</span> material_value <span style="color: #666666">&amp;&amp;</span> gradMagnitude <span style="color: #666666">==</span> <span style="color: #666666">0</span>) {
+            opacity <span style="color: #666666">=</span>  <span style="color: #666666">1.0</span>;
+        } 
+        <span style="color: #008000; font-weight: bold">else</span> <span style="color: #008000; font-weight: bold">if</span> (gradMagnitude <span style="color: #666666">&gt;</span> <span style="color: #666666">0</span>
+            <span style="color: #666666">&amp;&amp;</span> ((voxelValue <span style="color: #666666">-</span> radius <span style="color: #666666">*</span>gradMagnitude) <span style="color: #666666">&lt;=</span> material_value)
+            <span style="color: #666666">&amp;&amp;</span> ((voxelValue <span style="color: #666666">+</span> radius <span style="color: #666666">*</span> gradMagnitude) <span style="color: #666666">&gt;=</span> material_value)) {
+            opacity <span style="color: #666666">=</span>  (<span style="color: #666666">1.0</span> <span style="color: #666666">-</span> (<span style="color: #666666">1.0</span> <span style="color: #666666">/</span> radius)
+                <span style="color: #666666">*</span> (Math.<span style="color: #7D9029">abs</span>((material_value <span style="color: #666666">-</span> voxelValue) <span style="color: #666666">/</span> gradMagnitude)));
+        } 
+        <span style="color: #008000; font-weight: bold">else</span>
+        {
+            opacity <span style="color: #666666">=</span> <span style="color: #666666">0.0</span>;
+        }
+                                               
+        <span style="color: #008000; font-weight: bold">return</span> opacity;
+    }
+</pre></div>
